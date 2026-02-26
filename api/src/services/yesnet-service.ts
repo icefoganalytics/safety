@@ -1,6 +1,6 @@
 import axios from "axios";
 import moment from "moment";
-import { isNil } from "lodash";
+import { isNaN, isNil, isNumber } from "lodash";
 
 import {
   YESNET_CLIENT_ID,
@@ -30,7 +30,7 @@ export class YESNETService {
         body,
         {
           headers: { "Content-type": "application/x-www-form-urlencoded" },
-        }
+        },
       )
       .then((resp) => {
         this.token = resp.data.access_token;
@@ -63,20 +63,22 @@ export class YESNETService {
 
         if (piece == "") continue;
 
+        piece = piece.replace(/'/g, "''");
+
         queryStmts.push(
-          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`
+          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`,
         );
       }
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND "
+            " AND ",
           )} ${selectStmt}`,
-          { headers: this.authHeader }
+          { headers: this.authHeader },
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
@@ -108,12 +110,12 @@ export class YESNETService {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
                     dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                      m.toLowerCase().endsWith("@wcb.yk.ca"),
                     ) ?? dir.mail;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca"
+                    "@YNet.gov.yk.ca",
                   );
                 } else continue;
               }
@@ -125,11 +127,18 @@ export class YESNETService {
               )
                 continue;
 
+              if (!dir.accountEnabled) continue;
+              if (dir.jobTitle == "Student") continue;
+
+              const yesnet_id = dir.userPrincipalName
+                .toLowerCase()
+                .replace("@yesnet.yk.ca", "");
+
+              if (!isNaN(Number(yesnet_id))) continue;
+
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName
-                .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+              } (${dir.userPrincipalName.toLowerCase()})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -145,9 +154,7 @@ export class YESNETService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id: yesnet_id,
                 email: dir.mail,
                 long_name,
                 title,
@@ -180,17 +187,19 @@ export class YESNETService {
 
       let queryStmts = new Array<string>();
 
+      terms = terms.replace(/'/g, "''");
+
       queryStmts.push(`( startsWith(mail,'${terms}') )`);
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,accountEnabled";
 
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND "
+            " AND ",
           )} ${selectStmt}`,
-          { headers: this.authHeader }
+          { headers: this.authHeader },
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
@@ -222,12 +231,12 @@ export class YESNETService {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
                     dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca")
+                      m.toLowerCase().endsWith("@wcb.yk.ca"),
                     ) ?? dir.mail;
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca"
+                    "@YNet.gov.yk.ca",
                   );
                 } else continue;
               }
@@ -239,11 +248,18 @@ export class YESNETService {
               )
                 continue;
 
+              if (!dir.accountEnabled) continue;
+              if (dir.jobTitle == "Student") continue;
+
+              const yesnet_id = dir.userPrincipalName
+                .toLowerCase()
+                .replace("@yesnet.yk.ca", "");
+
+              if (!isNaN(Number(yesnet_id))) continue;
+
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName
-                .toLowerCase()
-                .replace("@ynet.gov.yk.ca", "")})`;
+              } (${dir.userPrincipalName.toLowerCase()})`;
               let title = "Unknown title";
 
               if (dir.department) {
@@ -259,9 +275,7 @@ export class YESNETService {
                 display_name: `${dir.givenName} ${dir.surname}`,
                 first_name: dir.givenName,
                 last_name: dir.surname,
-                ynet_id: dir.userPrincipalName
-                  .toLowerCase()
-                  .replace("@ynet.gov.yk.ca", ""),
+                ynet_id: yesnet_id,
                 email: dir.mail,
                 long_name,
                 title,
