@@ -56,23 +56,23 @@
             <h4 class="text-h5 mb-0">Non-Remediated Hazards</h4>
             <p class="mb-3">Identified in this location</p>
 
-            <v-list v-if="hazards.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
-              <div v-for="(hazard, idx) of hazards">
-                <v-list-item class="pt-2 pb-2" :title="makeTitle(hazard)" :subtitle="makeSubtitle(hazard)"
-                  @click="openOtherActionDialog(hazard)">
+            <v-list v-if="actions.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+              <div v-for="(action, idx) of actions">
+                <v-list-item class="pt-2 pb-2" :title="makeTitle(action)" :subtitle="makeSubtitle(action)"
+                  @click="openOtherActionDialog(action)">
                   <template #prepend>
                     <v-avatar size="small" class="mx-n2">
-                      <v-icon v-if="hazard.urgency_code == 'Critical'" color="#D90000"
+                      <v-icon v-if="action.urgency_code == 'Critical'" color="#D90000"
                         size="26">mdi-alpha-c-circle</v-icon>
-                      <v-icon v-else-if="hazard.urgency_code == 'High'" color="#FF8000"
+                      <v-icon v-else-if="action.urgency_code == 'High'" color="#FF8000"
                         size="26">mdi-alpha-h-circle</v-icon>
-                      <v-icon v-else-if="hazard.urgency_code == 'Medium'" color="#f3b228"
+                      <v-icon v-else-if="action.urgency_code == 'Medium'" color="#f3b228"
                         size="26">mdi-alpha-m-circle</v-icon>
                       <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
                     </v-avatar>
                   </template>
                 </v-list-item>
-                <v-divider v-if="idx < hazards.length - 1" />
+                <v-divider v-if="idx < actions.length - 1" />
               </div>
             </v-list>
             <div v-else>No non-remediated hazards found in this location</div>
@@ -119,6 +119,7 @@ import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import InspectionLocationSelector from "../InspectionLocationSelector.vue";
 import InspectionActionList from "@/components/action/InspectionActionList.vue";
 import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
+import { useActionStore } from "@/store/ActionStore";
 
 const inspectionStore = useInspectionStore();
 const { initialize, addInspection, loadReport } = inspectionStore;
@@ -131,9 +132,9 @@ const departmentStore = useDepartmentStore();
 const { initialize: initDepartments } = departmentStore;
 const { departments } = storeToRefs(departmentStore);
 
-const hazardStore = useHazardStore();
-const { loadHazards, clear } = hazardStore;
-const { hazards } = storeToRefs(hazardStore);
+const actionStore = useActionStore
+const { loadActions, clear } = actionStore;
+const { actions } = storeToRefs(actionStore);
 
 const isValid = ref(false);
 
@@ -149,12 +150,12 @@ await initDepartments();
 await clear();
 
 async function reload() {
-  await loadHazards({
+  await loadActions({
     page: 1,
     perPage: 100,
     inspection_location_id: report.value.inspection_location_id,
     status: ["Open", "InPro"],
-  });
+  })
 }
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium", location_code: "WHI" });
@@ -235,7 +236,7 @@ function openConfirmationDialogAndGoToInspectionsPage() {
 
 function openOtherActionDialog(action) {
   const hazardAction = action.actions[0];
-  
+
   doShowActionEdit(hazardAction);
 }
 </script>
