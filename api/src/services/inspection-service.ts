@@ -9,7 +9,7 @@ export class InspectionService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE LOWER("user_email") = ?)`, [email.toLowerCase()])
       .where("incident_types.name", "inspection")
       .modify(where)
       .select(
@@ -26,7 +26,7 @@ export class InspectionService {
       .innerJoin("incident_types", "incident_types.id", "incidents.incident_type_id")
       .innerJoin("incident_statuses", "incident_statuses.code", "incidents.status_code")
       .innerJoin("departments", "departments.code", "incidents.department_code")
-      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE LOWER("user_email") = ?)`, [email.toLowerCase()])
       .where("incident_types.name", "inspection")
       .modify(where)
       .count("* as count")
@@ -47,7 +47,7 @@ export class InspectionService {
       .innerJoin("departments", "departments.code", "incidents.department_code")
       .innerJoin("locations", "incidents.location_code", "locations.code")
       .leftOuterJoin("inspection_locations", "inspection_locations.id", "incidents.inspection_location_id")
-      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE "user_email" = ?)`, [email])
+      .whereRaw(`"incidents"."id" IN (SELECT "incident_id" FROM "incident_users_view" WHERE LOWER("user_email") = ?)`, [email.toLowerCase()])
       .where("incident_types.name", "inspection")
       .select<Incident>(
         "incidents.*",
@@ -67,7 +67,9 @@ export class InspectionService {
       .select("id", "incident_id", "added_by_email", "file_name", "file_type", "file_size", "added_date");
 
     item.actions = await db("actions").where({ incident_id: item.id }).orderBy("due_date").orderBy("id");
-    item.access = await db("incident_users_view").where({ incident_id: item.id, user_email: email });
+    item.access = await db("incident_users_view")
+      .where({ incident_id: item.id })
+      .whereRaw(`LOWER("user_email") = ?`, [email.toLowerCase()]);
 
     item.hazards = await db("incident_hazards")
       .where({ incident_id: item.id })
@@ -103,7 +105,7 @@ export class InspectionService {
 
   async getByReportingEmail(email: string): Promise<Incident[]> {
     return db<Incident>("incidents")
-      .where("incident_users_view.user_email", email)
+      .whereRaw(`LOWER("incident_users_view"."user_email") = ?`, [email.toLowerCase()])
       .where("incident_users_view.reason", "reporter")
       .where("incident_types.name", "inspection")
       .whereNotIn("status_code", ["Closed", "Dup", "NoAct"])

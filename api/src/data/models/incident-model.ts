@@ -31,6 +31,8 @@ export interface Incident {
   identifier?: string;
   inspection_location_id?: number;
   source?: string;
+  committee_review_request_date?: Date;
+  committee_review_complete_date?: Date;
 
   attachments?: any[];
   steps?: IncidentStep[];

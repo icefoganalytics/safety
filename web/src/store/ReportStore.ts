@@ -354,6 +354,16 @@ export const useReportStore = defineStore("reports", {
       });
     },
 
+    completeCommitteeReview() {
+      if (!this.selectedReport) return;
+      let reportId = this.selectedReport.id;
+
+      const api = useApiStore();
+      return api.secureCall("post", `${REPORTS_URL}/${reportId}/complete-committee-review`, {}).then(() => {
+        if (this.selectedReport) this.loadReport(this.selectedReport.slug);
+      });
+    },
+
     loadLinkedUsers() {
       let reportId = this.selectedReport?.slug;
 
@@ -423,6 +433,9 @@ export interface Incident {
   hs_recommendations?: string;
   identifier?: string;
   inspection_location_id?: number;
+
+  committee_review_request_date?: Date;
+  committee_review_complete_date?: Date;
 
   incident_type_description: string;
   status_name: string;

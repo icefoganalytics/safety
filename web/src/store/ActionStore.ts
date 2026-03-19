@@ -2,6 +2,7 @@ import { acceptHMRUpdate, defineStore } from "pinia";
 import { useApiStore } from "./ApiStore";
 import { ACTION_URL } from "@/urls";
 import { isArray, isEmpty, isNil } from "lodash";
+import { clear } from "console";
 
 export const useActionStore = defineStore("actions", {
   state: () => ({
@@ -22,12 +23,14 @@ export const useActionStore = defineStore("actions", {
       search,
       status,
       review,
+      inspection_location_id,
     }: {
       page: number | null;
       perPage: number | null;
       search: string | null;
       status: string | null;
       review: number | null;
+      inspection_location_id: number | null;
     }) {
       this.isLoading = true;
 
@@ -41,6 +44,8 @@ export const useActionStore = defineStore("actions", {
       if (!isEmpty(search)) queryUrl += `search=${search}&`;
       if (!isNil(status)) queryUrl += `status=${status}&`;
       if (!isNil(review)) queryUrl += `review=${review}&`;
+      if (!isNil(inspection_location_id))
+        queryUrl += `inspection_location_id=${inspection_location_id}&`;
 
       return api.secureCall("get", queryUrl).then((resp) => {
         this.actions = resp.data;
@@ -58,11 +63,13 @@ export const useActionStore = defineStore("actions", {
       this.isLoading = true;
       const api = useApiStore();
 
-      return api.secureCall("get", `${ACTION_URL}/${slug}`, null, ignoreError).then((resp) => {
-        this.selectedAction = resp.data;
-        this.isLoading = false;
-        return resp.data;
-      });
+      return api
+        .secureCall("get", `${ACTION_URL}/${slug}`, null, ignoreError)
+        .then((resp) => {
+          this.selectedAction = resp.data;
+          this.isLoading = false;
+          return resp.data;
+        });
     },
 
     async saveAction(action: Action) {
@@ -149,6 +156,12 @@ export const useActionStore = defineStore("actions", {
         .catch(() => {
           console.log(`Error in revert action`);
         });
+    },
+
+    clear() {
+      this.actions = [];
+      this.selectedAction = null;
+      this.totalCount = 0;
     },
   },
 });

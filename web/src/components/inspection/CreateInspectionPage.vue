@@ -132,7 +132,7 @@ const departmentStore = useDepartmentStore();
 const { initialize: initDepartments } = departmentStore;
 const { departments } = storeToRefs(departmentStore);
 
-const actionStore = useActionStore
+const actionStore = useActionStore()
 const { loadActions, clear } = actionStore;
 const { actions } = storeToRefs(actionStore);
 
