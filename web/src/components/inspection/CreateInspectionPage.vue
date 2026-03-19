@@ -154,7 +154,7 @@ async function reload() {
     page: 1,
     perPage: 100,
     inspection_location_id: report.value.inspection_location_id,
-    status: ["Open", "InPro"],
+    status: ["Open", "In Progress"],
   })
 }
 
