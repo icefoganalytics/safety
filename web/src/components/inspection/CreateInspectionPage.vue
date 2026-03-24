@@ -25,10 +25,17 @@
                 @update:model-value="report.inspection_location_id = null" />
             </v-col>
 
-            <v-col cols="12" sm="12">
+            <v-col cols="12" sm="4">
+              <v-label class="mb-1" style="white-space: inherit">Branch</v-label>
+              <v-select v-model="selectedBranch" :items="branchOptions" :disabled="isNil(report.department_code)"
+                :readonly="!isNil(selectedReport)" clearable
+                @update:model-value="report.inspection_location_id = null" />
+            </v-col>
+            <v-col cols="12" sm="8">
               <v-label class="mb-1" style="white-space: inherit">Location</v-label>
               <InspectionLocationSelector v-model="report.inspection_location_id"
                 :disabled="isNil(report.department_code)" :department="report.department_code"
+                :branch="selectedBranch"
                 :readonly="!isNil(selectedReport)" :rules="[requiredRule]" />
             </v-col>
           </v-row>
@@ -111,6 +118,8 @@ import { useInspectionStore } from "@/store/InspectionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
 import { useHazardStore } from "@/store/HazardStore";
+import { useApiStore } from "@/store/ApiStore";
+import { INSPECTION_LOCATION_URL } from "@/urls";
 
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { requiredRule } from "@/utils/validation";
@@ -136,7 +145,10 @@ const actionStore = useActionStore()
 const { loadActions, clear } = actionStore;
 const { actions } = storeToRefs(actionStore);
 
+const apiStore = useApiStore();
 const isValid = ref(false);
+const selectedBranch = ref(null);
+const branchOptions = ref([]);
 
 const confirmDialog = ref(null);
 const router = useRouter();
@@ -159,6 +171,20 @@ async function reload() {
 }
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium", location_code: "WHI" });
+
+watch(
+  () => report.value.department_code,
+  async (newValue) => {
+    selectedBranch.value = null;
+    branchOptions.value = [];
+    if (newValue) {
+      const resp = await apiStore.secureCall("get", `${INSPECTION_LOCATION_URL}/branches/${newValue}`);
+      if (resp && resp.data) {
+        branchOptions.value = resp.data;
+      }
+    }
+  }
+);
 
 watch(
   () => report.value.location_code,

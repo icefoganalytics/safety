@@ -21,6 +21,10 @@ const props = defineProps({
     type: String,
     default: null,
   },
+  branch: {
+    type: String,
+    default: null,
+  },
 });
 
 const filteredLocations = computed(() => {
@@ -28,10 +32,16 @@ const filteredLocations = computed(() => {
     return [];
   }
 
+  let results = inspectionlocations.value;
+
   if (!isNil(props.department)) {
-    return inspectionlocations.value.filter((location) => location.department_code === props.department);
+    results = results.filter((location) => location.department_code === props.department);
   }
 
-  return inspectionlocations.value;
+  if (!isNil(props.branch) && props.branch !== "") {
+    results = results.filter((location) => location.branch === props.branch);
+  }
+
+  return results;
 });
 </script>
