@@ -84,6 +84,8 @@ export interface InspectionLocation {
   description: string;
   department_code: string;
   building_id?: number;
+  location_code?: string;
+  branch?: string;
 }
 
 if (import.meta.hot) {

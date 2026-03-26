@@ -52,7 +52,7 @@ const actionStore = useActionStore();
 const { loadActions } = actionStore;
 const { actions } = storeToRefs(actionStore);
 
-loadActions({ page: 1, perPage: 15, search: null, review: null, status: "Dashboard" });
+loadActions({ page: 1, perPage: 15, search: null, review: null, status: "Dashboard", inspection_location_id: null });
 
 function makeTitle(input: Action) {
   return `${input.incident_identifier ? input.incident_identifier + " : " : ""}${input.description}`;

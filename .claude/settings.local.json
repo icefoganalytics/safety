@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "Bash(grep -r \"INSPECTION_LOCATION_URL\\\\|DEPARTMENT_URL\\\\|LOCATION_URL\" /c/dev/safety/web/src/urls.*)",
+      "Bash(xargs grep:*)"
+    ]
+  }
+}

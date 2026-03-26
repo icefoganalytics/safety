@@ -87,9 +87,10 @@ reportRouter.get("/", async (req: Request, res: Response) => {
   const locations = await knex("locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
-  const access = await knex("incident_users_view").where({
-    user_email: req.user.email,
-  });
+  const access = await knex("incident_users_view").whereRaw(
+    `LOWER("user_email") = ?`,
+    [req.user.email.toLowerCase()],
+  );
 
   for (const item of list) {
     item.location = locations.find((l: any) => l.code === item.location_code);
@@ -133,9 +134,10 @@ reportRouter.get("/csv-export", async (req: Request, res: Response) => {
   const locations = await knex("locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
-  const access = await knex("incident_users_view").where({
-    user_email: req.user.email,
-  });
+  const access = await knex("incident_users_view").whereRaw(
+    `LOWER("user_email") = ?`,
+    [req.user.email.toLowerCase()],
+  );
 
   for (const item of list) {
     item.location = locations.find((l: any) => l.code === item.location_code);
@@ -212,6 +214,8 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     urgency_code,
     incident_type_id,
     hs_recommendations,
+    committee_supervisor_response,
+    committee_supervisor_rationale,
   } = req.body;
 
   const userIsAdmin =
@@ -232,6 +236,8 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     urgency_code,
     incident_type_id,
     hs_recommendations,
+    committee_supervisor_response,
+    committee_supervisor_rationale,
   });
 
   return res.json({
@@ -320,6 +326,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   } = req.body;
 
   let reporting_person_email = req.user.email;
+  let investigation_notes = null;
 
   await directoryService.connect();
 
@@ -329,7 +336,8 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     if (directoryOnBehalf && directoryOnBehalf.length == 1) {
       reporting_person_email = directoryOnBehalf[0].email;
     } else {
-      reporting_person_email = on_behalf_email;
+      reporting_person_email = req.user.email;
+      investigation_notes = `Report submitted on behalf of ${on_behalf_email}.`;
     }
   }
 
@@ -374,6 +382,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       location_code,
       location_detail,
       slug: generateSlug(),
+      investigation_notes,
       identifier: await generateIdentifier(trx),
       source: "online",
     } as Incident;
@@ -485,6 +494,10 @@ reportRouter.post("/", async (req: Request, res: Response) => {
         employeeName,
         insertedIncidents[0],
       );
+    } else {
+      console.log(
+        `Supervisor email ${supervisor_email} not found in directory, skipping notification email.`,
+      );
     }
 
     await trx.commit();
@@ -515,19 +528,6 @@ reportRouter.put(
             complete_date: InsertableDate(DateTime.utc().toISO()),
             complete_user_id: req.user.id,
           });
-
-        // send email to supervisor if the CommitteeReview step is complete.
-        if (step.step_title == "Committee Review") {
-          const incident = await knex("incidents").where({ id }).first();
-
-          await emailService.sendIncidentReviewCompleteNotification(
-            {
-              fullName: incident.supervisor_email,
-              email: incident.supervisor_email,
-            },
-            incident,
-          );
-        }
       } else if (operation == "revert") {
         await knex("incident_steps")
           .where({ incident_id: id, id: step_id })
@@ -700,6 +700,21 @@ reportRouter.post(
     const incident = await knex("incidents").where({ id }).first();
     if (!incident) return res.status(404).send();
 
+    // If committee review occurred, supervisor must have responded before notification
+    if (
+      incident.committee_review_complete_date &&
+      !incident.committee_supervisor_response
+    ) {
+      return res.status(400).json({
+        messages: [
+          {
+            variant: "error",
+            text: "Supervisor must review committee recommendations before sending notification",
+          },
+        ],
+      });
+    }
+
     const directorySubmitter = await directoryService.searchByEmail(
       incident.reporting_person_email,
     );
@@ -738,49 +753,15 @@ reportRouter.post(
       committee_id: committeeId,
     });
 
-    const incidentSteps = await knex("incident_steps")
-      .where({ incident_id: id })
-      .orderBy("order");
-
-    const implementedStep = incidentSteps.find(
-      (step: IncidentStep) =>
-        step.step_title == "Controls Implemented" ||
-        step.step_title == "Control the Hazard",
-    );
-    const requestStep = incidentSteps.find(
-      (step: IncidentStep) => step.step_title == "Committee Review",
-    );
-
-    if (isNil(implementedStep)) {
-      console.log("No implemented step found, cannot send to committee");
-      return res
-        .status(400)
-        .send("No implemented step found, cannot send to committee");
+    if (incident.committee_review_request_date) {
+      return res.status(400).send("Committee review already requested");
     }
 
-    if (!isNil(requestStep)) return res.status(400).send("Step already exists");
-
-    const newStep = {
-      incident_id: id,
-      step_title: "Committee Review",
-      order: implementedStep.order,
-      activate_date: new Date(),
-    };
-
-    const stepsToIncrement = await knex("incident_steps")
-      .where({ incident_id: id })
-      .andWhere("order", ">=", implementedStep.order)
-      .orderBy("order", "desc");
-
-    for (const step of stepsToIncrement) {
-      await knex("incident_steps")
-        .where({ incident_id: id, id: step.id })
-        .update({
-          order: step.order + 1,
-        });
-    }
-
-    await knex("incident_steps").insert(newStep);
+    await knex("incidents")
+      .where({ id })
+      .update({
+        committee_review_request_date: InsertableDate(DateTime.utc().toISO()),
+      });
 
     for (const user of committeeUsers) {
       const userRecord = await knex("users")
@@ -804,6 +785,43 @@ reportRouter.post(
     return res.json({
       data: {},
       messages: [{ variant: "success", text: "Email Sent" }],
+    });
+  },
+);
+
+reportRouter.post(
+  "/:id/complete-committee-review",
+  async (req: Request, res: Response) => {
+    const { id } = req.params;
+
+    const incident = await knex("incidents").where({ id }).first();
+    if (!incident) return res.status(404).send();
+
+    if (!incident.committee_review_request_date) {
+      return res.status(400).send("Committee review has not been requested");
+    }
+
+    if (incident.committee_review_complete_date) {
+      return res.status(400).send("Committee review already completed");
+    }
+
+    await knex("incidents")
+      .where({ id })
+      .update({
+        committee_review_complete_date: InsertableDate(DateTime.utc().toISO()),
+      });
+
+    await emailService.sendIncidentReviewCompleteNotification(
+      {
+        fullName: incident.supervisor_email,
+        email: incident.supervisor_email,
+      },
+      incident,
+    );
+
+    return res.json({
+      data: {},
+      messages: [{ variant: "success", text: "Committee Review Completed" }],
     });
   },
 );

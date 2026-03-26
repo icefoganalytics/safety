@@ -58,8 +58,7 @@
       <v-list-item
         v-if="isReview"
         title="Complete Committee Review"
-        :subtitle="currentStep.step_title"
-        @click="completeClick(currentStep)">
+        @click="completeReviewClick">
         <template #prepend>
           <v-icon color="green">mdi-check-bold</v-icon>
         </template>
@@ -133,7 +132,7 @@ import CommitteeForm from "./CommitteeForm.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
 
 const reportStore = useReportStore();
-const { completeStep, revertStep, deleteIncident } = reportStore;
+const { completeStep, revertStep, deleteIncident, completeCommitteeReview } = reportStore;
 const { currentStep, selectedReport } = storeToRefs(reportStore);
 const userStore = useUserStore();
 
@@ -156,17 +155,12 @@ const previousStep = computed(() => {
 });
 
 const isCommittee = computed(() => {
-  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
-  if (isReview.value) return false;
-  if (selectedReport.value.incident_type_description == "Hazard" && currentStep.value.order == 3) return true;
-  if (
-    (selectedReport.value.incident_type_description == "Incident" ||
-      selectedReport.value.incident_type_description == "No Loss Incident (near miss)") &&
-    currentStep.value.order == 4
-  )
-    return true;
+  if (!selectedReport.value || !selectedReport.value.steps) return false;
+  if (selectedReport.value.committee_review_request_date) return false;
 
-  return false;
+  // Committee review can be requested once the investigation step (order 2) is complete
+  const investigationStep = selectedReport.value.steps.find((s) => s.order === 2);
+  return investigationStep && !!investigationStep.complete_date;
 });
 const isInvestigation = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
@@ -178,11 +172,13 @@ const isHazardAssessment = computed(() => {
 });
 const isNotification = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
+  if (selectedReport.value.committee_review_request_date && !selectedReport.value.committee_review_complete_date) return false;
+  // If committee review happened, supervisor must have responded before notification
+  if (selectedReport.value.committee_review_complete_date && !selectedReport.value.committee_supervisor_response) return false;
   return currentStep.value.step_title.includes("Notification");
 });
 const isReview = computed(() => {
-  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
-  return currentStep.value.step_title.includes("Committee Review");
+  return selectedReport.value.committee_review_request_date && !selectedReport.value.committee_review_complete_date;
 });
 
 const isSupervisorUser = computed(() => {
@@ -205,6 +201,9 @@ const canRevert = computed(() => {
 
 async function completeClick(step) {
   await completeStep(step);
+}
+async function completeReviewClick() {
+  await completeCommitteeReview();
 }
 async function revertClick(step) {
   await revertStep(step);
@@ -231,6 +230,6 @@ async function completeNotification() {
 }
 
 async function sendToCommittee() {
-  await completeStep(currentStep.value);
+  // Committee request only sets the request date; it does not advance the workflow step
 }
 </script>

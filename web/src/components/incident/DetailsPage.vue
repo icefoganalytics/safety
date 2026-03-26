@@ -9,53 +9,39 @@
     <h1 class="text-h4 mb-2">
       {{ selectedReport.incident_type_description }} Details
 
-      <v-chip
-        class="ml-3"
-        size="large"
-        style="margin-top: -8px"
-        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_sun'"
-        variant="flat">
+      <v-chip class="ml-3" size="large" style="margin-top: -8px"
+        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_sun'" variant="flat">
         <strong>Id:</strong> &nbsp; {{ selectedReport.identifier }}
       </v-chip>
 
-      <v-chip
-        class="ml-3"
-        size="large"
-        style="margin-top: -8px"
-        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_zinc'"
-        variant="flat">
+      <v-chip class="ml-3" size="large" style="margin-top: -8px"
+        :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_zinc'" variant="flat">
         <strong>Status:</strong> &nbsp; {{ selectedReport.status_name }}
+      </v-chip>
+      <v-chip v-if="selectedReport.committee_review_request_date && !selectedReport.committee_review_complete_date"
+        class="ml-3" size="large" style="margin-top: -8px" color="warning" variant="flat">
+        Under Committee Review
+      </v-chip>
+      <v-chip v-if="selectedReport.committee_review_complete_date" class="ml-3" size="large" style="margin-top: -8px"
+        color="success" variant="flat">
+        Committee Review Complete
       </v-chip>
     </h1>
     <div class="my-3" style="clear: both"></div>
 
     <div v-if="!isActionOnly" class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
       <v-stepper-vertical v-if="smAndDown" hide-actions>
-        <v-stepper-vertical-item
-          v-for="(step, idx) of selectedReport.steps"
-          :value="idx + 1"
-          :complete="!isNil(step.complete_date)"
-          :title="step.step_title"
-          :color="step.complete_date ? 'success' : ''"
+        <v-stepper-vertical-item v-for="(step, idx) of selectedReport.steps" :value="idx + 1"
+          :complete="!isNil(step.complete_date)" :title="step.step_title" :color="step.complete_date ? 'success' : ''"
           :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
         </v-stepper-vertical-item>
       </v-stepper-vertical>
 
-      <v-stepper
-        v-else
-        v-model="stepperValue"
-        flat
-        alt-labels
-        style="clear: both"
-        bg-color="#ffffff00"
+      <v-stepper v-else v-model="stepperValue" flat alt-labels style="clear: both" bg-color="#ffffff00"
         :class="{ unpadded: !smAndDown }">
         <v-stepper-header>
-          <v-stepper-item
-            v-for="(step, idx) of selectedReport.steps"
-            :value="idx + 1"
-            :complete="!isNil(step.complete_date)"
-            :title="step.step_title"
-            :color="step.complete_date ? 'success' : ''"
+          <v-stepper-item v-for="(step, idx) of selectedReport.steps" :value="idx + 1"
+            :complete="!isNil(step.complete_date)" :title="step.step_title" :color="step.complete_date ? 'success' : ''"
             :subtitle="makeStepSubtitle(step)">
           </v-stepper-item>
         </v-stepper-header>
@@ -73,22 +59,16 @@
             </v-card-item>
             <v-card-text class="pt-2">
               <v-label>Department</v-label>
-              <v-text-field
-                :value="selectedReport.department_name"
-                append-inner-icon="mdi-lock"
+              <v-text-field :value="selectedReport.department_name" append-inner-icon="mdi-lock"
                 readonly></v-text-field>
               <div v-if="stepperValue < 3 && stepperValue != -1">
                 <v-label>Reported by</v-label>
-                <v-text-field
-                  :value="selectedReport.reporting_person_email"
-                  append-inner-icon="mdi-lock"
+                <v-text-field :value="selectedReport.reporting_person_email" append-inner-icon="mdi-lock"
                   readonly></v-text-field>
               </div>
 
               <v-label>Supervisor</v-label>
-              <v-text-field
-                :value="selectedReport.supervisor_email"
-                append-inner-icon="mdi-lock"
+              <v-text-field :value="selectedReport.supervisor_email" append-inner-icon="mdi-lock"
                 readonly></v-text-field>
 
               <IncidentUserList :incident_id="selectedReport.id" :editable="isSupervisor || isSystemAdmin" />
@@ -103,21 +83,17 @@
                 <v-label>Supporting images</v-label>
 
                 <div class="d-flex pt-2">
-                  <v-chip
-                    color="info"
-                    variant="flat"
-                    v-for="attach of selectedReport.attachments"
-                    class="mr-3"
+                  <v-chip color="info" variant="flat" v-for="attach of selectedReport.attachments" class="mr-3"
                     @click="openAttachmentClick(attach)">
                     <v-icon class="mr-3">mdi-camera</v-icon>
-                    {{ attach.file_name }}</v-chip
-                  >
+                    {{ attach.file_name }}</v-chip>
                 </div>
               </div>
             </v-card-text>
           </v-card>
 
-          <v-card class="default mb-5" v-if="isSupervisor || isSystemAdmin || isAction || isCommittee || (isReporter && currentStep.order >= 3)">
+          <v-card class="default mb-5"
+            v-if="isSupervisor || isSystemAdmin || isAction || isCommittee || (isReporter && currentStep.order >= 3)">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
                 <h4 class="text-h6">Control Plan</h4>
@@ -128,43 +104,47 @@
 
               <v-btn v-if="canAddTask" class="mb-0" size="small" color="info" @click="addTaskClick">Add Task</v-btn>
 
-              <ActionDialog
-                v-model="showActionEdit"
-                :action="actionToEdit"
-                :hazard-id="actionToEdit?.hazard_id"
-                :readonly="isCommittee"
-                @doClose="actionReload"></ActionDialog>
+              <ActionDialog v-model="showActionEdit" :action="actionToEdit" :hazard-id="actionToEdit?.hazard_id"
+                :readonly="isCommittee" @doClose="actionReload"></ActionDialog>
 
-              <HazardAssessmentForm
-                v-model="showHazardDialog"
-                :incident-id="selectedReport.id"
-                :incident_type_description="selectedReport.incident_type_description"
-                :hazard-report="selectedReport"
-                @complete="actionReload"
-                @close="showHazardDialog = false" />
+              <HazardAssessmentForm v-model="showHazardDialog" :incident-id="selectedReport.id"
+                :incident_type_description="selectedReport.incident_type_description" :hazard-report="selectedReport"
+                @complete="actionReload" @close="showHazardDialog = false" />
             </v-card-text>
           </v-card>
 
           <v-card class="default mb-5" v-if="hasCommitteeReview">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
-                <h4 class="text-h6">Committee Control Plan</h4>
+                <h4 class="text-h6">Committee Review</h4>
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
-              <CommitteeActionList @showAction="doShowActionEdit"></CommitteeActionList>
+              <v-label class="mb-1" style="white-space: inherit">Health and Safety Committee
+                Recommendations</v-label>
+              <v-textarea v-model="selectedReport.hs_recommendations" :readonly="!canEditRecommendations"
+                :append-inner-icon="canEditRecommendations ? '' : 'mdi-lock'"
+                hint="Please do not include names or personal identifiers" persistent-hint />
 
-              <v-btn v-if="canAddReviewTask" class="mb-0" size="small" color="info" @click="addReviewTaskClick"
-                >Add Task</v-btn
-              >
+              <div v-if="selectedReport.committee_review_complete_date" class="mt-4">
+                <v-label class="mb-1">Supervisor review of committee recommendations</v-label>
+                <v-select v-model="selectedReport.committee_supervisor_response" :readonly="!canEditRecommendations"
+                  :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'" :items="committeeResponseOptions"
+                  hide-details />
+                <div
+                  v-if="selectedReport.committee_supervisor_response === 'Supervisor rejects HSC recommendation. (If so, provide rationale below)'"
+                  class="mt-4">
+                  <v-label>Rationale</v-label>
+                  <v-textarea v-model="selectedReport.committee_supervisor_rationale"
+                    :readonly="!canEditRecommendations" :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'"
+                    hide-details />
+                </div>
+              </div>
 
-              <CommitteeAssessmentForm
-                v-model="showReviewDialog"
-                :incident-id="selectedReport.id"
-                :incident_type_description="selectedReport.incident_type_description"
-                :hazard-report="selectedReport"
-                @complete="actionReload"
-                @close="showReviewDialog = false" />
+              <div class="mt-4">
+                <v-btn v-if="canEditRecommendations" color="primary" class="my-0" @click="saveClick">Save</v-btn>
+              </div>
+
             </v-card-text>
           </v-card>
         </v-col>
@@ -183,17 +163,11 @@
                 </div>
 
                 <v-label class="mb-1" style="white-space: inherit">Urgency for supervisor attention</v-label>
-                <v-btn-toggle
-                  v-model="selectedReport.urgency_code"
-                  mandatory
-                  base-color="#eee"
-                  class="mb-4"
-                  :border="true"
-                  style="width: 100%">
+                <v-btn-toggle v-model="selectedReport.urgency_code" mandatory base-color="#eee" class="mb-4"
+                  :border="true" style="width: 100%">
                   <v-btn :readonly="!canEdit" color="green" value="Low" style="width: 33%" class="my-0">Low</v-btn>
-                  <v-btn :readonly="!canEdit" color="yellow" value="Medium" style="width: 34%" class="my-0"
-                    >Medium</v-btn
-                  >
+                  <v-btn :readonly="!canEdit" color="yellow" value="Medium" style="width: 34%"
+                    class="my-0">Medium</v-btn>
                   <v-btn :readonly="!canEdit" color="#ff4500" value="High" style="width: 33%" class="my-0">High</v-btn>
                   <!-- <v-btn :readonly="!canEdit" color="red" value="Critical" style="width: 25%" class="my-0"
                     >Critical</v-btn
@@ -205,32 +179,14 @@
 
                 <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
                   <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
-                  <v-textarea
-                    v-model="selectedReport.investigation_notes"
-                    :readonly="!canEdit"
+                  <v-textarea v-model="selectedReport.investigation_notes" :readonly="!canEdit"
                     :append-inner-icon="canEdit ? '' : 'mdi-lock'"
                     :hint="canEdit ? 'Please do not include names or personal identifiers' : ''"
                     :persistent-hint="canEdit" />
                 </div>
-
-                <div
-                  v-if="currentStep.step_title == 'Committee Review' || selectedReport.hs_recommendations"
-                  class="mt-4">
-                  <v-label class="mb-1" style="white-space: inherit"
-                    >Health and Safety Committee Recommendations</v-label
-                  >
-                  <v-textarea
-                    v-model="selectedReport.hs_recommendations"
-                    :append-inner-icon="
-                      (canEdit || isCommittee) && currentStep.step_title == 'Committee Review' ? '' : 'mdi-lock'
-                    "
-                    readonly
-                    hint="Please do not include names or personal identifiers"
-                    persistent-hint />
-                </div>
               </v-col>
 
-              <v-col v-if="canEdit || (isCommittee && currentStep.step_title == 'Committee Review')" cols="12" md="12">
+              <v-col v-if="canEdit" cols="12" md="12">
                 <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
@@ -257,11 +213,9 @@ const { smAndDown } = useDisplay();
 
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
-import CommitteeActionList from "@/components/action/CommitteeActionList.vue";
 import ActionDialog from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
-import CommitteeAssessmentForm from "./CommitteeAssessmentForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
@@ -295,7 +249,6 @@ await loadReport(reportId);
 
 const showActionEdit = ref(false);
 const showHazardDialog = ref(false);
-const showReviewDialog = ref(false);
 const actionToEdit = ref(null);
 
 const userStore = useUserStore();
@@ -325,40 +278,41 @@ const isActionOnly = computed(() => {
 });
 
 const hasCommitteeReview = computed(() => {
-  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
-
-  const reviewStep = selectedReport.value.steps.find((step) => {
-    return step.step_title.includes("Committee Review");
-  });
-
-  return !isNil(reviewStep);
+  return !isNil(selectedReport.value.committee_review_request_date);
 });
 
 const isReview = computed(() => {
-  if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
-
-  const reviewStep = selectedReport.value.steps.find((step) => {
-    return step.step_title.includes("Committee Review");
-  });
-
-  return !isNil(reviewStep);
+  return selectedReport.value.committee_review_request_date && !selectedReport.value.committee_review_complete_date;
 });
 
 const canAddTask = computed(() => {
   if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
   if (!(isSupervisor.value || isSystemAdmin.value)) return false;
-  if (selectedReport.value.incident_type_description != "Hazard") return false;
+  if (selectedReport.value.status_code !== "Open") return false;
 
-  return currentStep.value.step_title == "Control the Hazard";
+  if (selectedReport.value.incident_type_description == "Hazard") {
+    return currentStep.value.step_title == "Control the Hazard";
+  }
+
+  // For non-hazard incidents, supervisor can add tasks after committee review is complete
+  if (hasCommitteeReview.value && selectedReport.value.committee_review_complete_date) {
+    return true;
+  }
+
+  return currentStep.value.step_title == "Control Plan";
 });
 
-const canAddReviewTask = computed(() => {
-  if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
-  if (selectedReport.value.incident_type_description == "Hazard") return false;
-  if (!(isCommittee.value || isSystemAdmin.value)) return false;
-
-  return currentStep.value.step_title == "Committee Review";
+const canEditRecommendations = computed(() => {
+  if (!hasCommitteeReview.value) return false;
+  if (selectedReport.value.status_code !== "Open") return false;
+  return isSupervisor.value || isSystemAdmin.value;
 });
+
+const committeeResponseOptions = [
+  'Supervisor accepts HSC recommendation as is',
+  'Supervisor provides an alternative recommendation',
+  'Supervisor rejects HSC recommendation. (If so, provide rationale below)',
+];
 
 onMounted(() => {
   if (selectedAction.value) {
@@ -420,7 +374,7 @@ const canUseActions = computed(() => {
   return (
     isSupervisor.value ||
     isSystemAdmin.value ||
-    (isCommittee.value && currentStep.value.step_title == "Committee Review")
+    (isCommittee.value && isReview.value)
   );
 });
 
@@ -464,10 +418,6 @@ function openAttachmentClick(attachment) {
 function addTaskClick() {
   showHazardDialog.value = true;
 }
-
-function addReviewTaskClick() {
-  showReviewDialog.value = true;
-}
 </script>
 
 <style>
@@ -476,12 +426,15 @@ function addReviewTaskClick() {
   padding-left: 5px !important;
   padding-right: 5px !important;
 }
+
 .unpadded .v-stepper-item:first-of-type {
   padding-left: 5px !important;
 }
+
 .unpadded .v-stepper-item:last-of-type {
   padding-right: 5px !important;
 }
+
 .v-expansion-panel .v-expansion-panel-text {
   display: none;
 }

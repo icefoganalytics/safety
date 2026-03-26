@@ -25,10 +25,17 @@
                 @update:model-value="report.inspection_location_id = null" />
             </v-col>
 
-            <v-col cols="12" sm="12">
+            <v-col cols="12" sm="4">
+              <v-label class="mb-1" style="white-space: inherit">Branch</v-label>
+              <v-select v-model="selectedBranch" :items="branchOptions" :disabled="isNil(report.department_code)"
+                :readonly="!isNil(selectedReport)" clearable
+                @update:model-value="report.inspection_location_id = null" />
+            </v-col>
+            <v-col cols="12" sm="8">
               <v-label class="mb-1" style="white-space: inherit">Location</v-label>
               <InspectionLocationSelector v-model="report.inspection_location_id"
                 :disabled="isNil(report.department_code)" :department="report.department_code"
+                :branch="selectedBranch"
                 :readonly="!isNil(selectedReport)" :rules="[requiredRule]" />
             </v-col>
           </v-row>
@@ -56,22 +63,23 @@
             <h4 class="text-h5 mb-0">Non-Remediated Hazards</h4>
             <p class="mb-3">Identified in this location</p>
 
-            <v-list v-if="hazards.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
-              <div v-for="(hazard, idx) of hazards">
-                <v-list-item class="pt-2 pb-2" :title="makeTitle(hazard)" :subtitle="makeSubtitle(hazard)">
+            <v-list v-if="actions.length > 0" bg-color="#fff" class="py-0" style="border: 1px #aaa solid" rounded>
+              <div v-for="(action, idx) of actions">
+                <v-list-item class="pt-2 pb-2" :title="makeTitle(action)" :subtitle="makeSubtitle(action)"
+                  @click="openOtherActionDialog(action)">
                   <template #prepend>
                     <v-avatar size="small" class="mx-n2">
-                      <v-icon v-if="hazard.urgency_code == 'Critical'" color="#D90000"
+                      <v-icon v-if="action.urgency_code == 'Critical'" color="#D90000"
                         size="26">mdi-alpha-c-circle</v-icon>
-                      <v-icon v-else-if="hazard.urgency_code == 'High'" color="#FF8000"
+                      <v-icon v-else-if="action.urgency_code == 'High'" color="#FF8000"
                         size="26">mdi-alpha-h-circle</v-icon>
-                      <v-icon v-else-if="hazard.urgency_code == 'Medium'" color="#f3b228"
+                      <v-icon v-else-if="action.urgency_code == 'Medium'" color="#f3b228"
                         size="26">mdi-alpha-m-circle</v-icon>
                       <v-icon v-else color="green" size="26">mdi-alpha-l-circle</v-icon>
                     </v-avatar>
                   </template>
                 </v-list-item>
-                <v-divider v-if="idx < hazards.length - 1" />
+                <v-divider v-if="idx < actions.length - 1" />
               </div>
             </v-list>
             <div v-else>No non-remediated hazards found in this location</div>
@@ -110,6 +118,8 @@ import { useInspectionStore } from "@/store/InspectionStore";
 import { useInterfaceStore } from "@/store/InterfaceStore";
 import { useDepartmentStore } from "@/store/DepartmentStore";
 import { useHazardStore } from "@/store/HazardStore";
+import { useApiStore } from "@/store/ApiStore";
+import { INSPECTION_LOCATION_URL } from "@/urls";
 
 import ConfirmDialog from "@/components/ConfirmDialog.vue";
 import { requiredRule } from "@/utils/validation";
@@ -118,6 +128,7 @@ import DateTimeSelector from "@/components/DateTimeSelector.vue";
 import InspectionLocationSelector from "../InspectionLocationSelector.vue";
 import InspectionActionList from "@/components/action/InspectionActionList.vue";
 import HazardAssessmentForm from "@/components/incident/HazardAssessmentForm.vue";
+import { useActionStore } from "@/store/ActionStore";
 
 const inspectionStore = useInspectionStore();
 const { initialize, addInspection, loadReport } = inspectionStore;
@@ -130,11 +141,14 @@ const departmentStore = useDepartmentStore();
 const { initialize: initDepartments } = departmentStore;
 const { departments } = storeToRefs(departmentStore);
 
-const hazardStore = useHazardStore();
-const { loadHazards, clear } = hazardStore;
-const { hazards } = storeToRefs(hazardStore);
+const actionStore = useActionStore()
+const { loadActions, clear } = actionStore;
+const { actions } = storeToRefs(actionStore);
 
+const apiStore = useApiStore();
 const isValid = ref(false);
+const selectedBranch = ref(null);
+const branchOptions = ref([]);
 
 const confirmDialog = ref(null);
 const router = useRouter();
@@ -148,18 +162,39 @@ await initDepartments();
 await clear();
 
 async function reload() {
-  await loadHazards({
+  await loadActions({
     page: 1,
     perPage: 100,
-    location: report.value.location_code,
-    status: ["Open", "InPro"],
-  });
+    inspection_location_id: report.value.inspection_location_id,
+    status: ["Open", "In Progress"],
+  })
 }
 
 const report = ref({ eventType: null, date: new Date(), urgency: "Medium", location_code: "WHI" });
 
 watch(
+  () => report.value.department_code,
+  async (newValue) => {
+    selectedBranch.value = null;
+    branchOptions.value = [];
+    if (newValue) {
+      const resp = await apiStore.secureCall("get", `${INSPECTION_LOCATION_URL}/branches/${newValue}`);
+      if (resp && resp.data) {
+        branchOptions.value = resp.data;
+      }
+    }
+  }
+);
+
+watch(
   () => report.value.location_code,
+  (newValue) => {
+    if (newValue) reload();
+  }
+);
+
+watch(
+  () => report.value.inspection_location_id,
   (newValue) => {
     if (newValue) reload();
   }
@@ -223,5 +258,11 @@ function openConfirmationDialogAndGoToInspectionsPage() {
     },
     () => { }
   );
+}
+
+function openOtherActionDialog(action) {
+  const hazardAction = action.actions[0];
+
+  doShowActionEdit(hazardAction);
 }
 </script>

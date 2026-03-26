@@ -159,7 +159,7 @@ const isSupervisor = computed(() => {
 });
 
 const canAct = computed(() => {
-  return currentStep.value?.step_title == "Committee Review" ? false : true;
+  return selectedReport.value?.committee_review_request_date && !selectedReport.value?.committee_review_complete_date ? false : true;
 });
 
 function closeClick() {

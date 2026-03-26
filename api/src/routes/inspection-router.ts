@@ -48,7 +48,7 @@ inspectionRouter.get("/", async (req: Request, res: Response) => {
   const inspectionLocations = await knex("inspection_locations");
   const types = await knex("incident_types");
   const statuses = await knex("incident_statuses");
-  const access = await knex("incident_users_view").where({ user_email: req.user.email });
+  const access = await knex("incident_users_view").whereRaw(`LOWER("user_email") = ?`, [req.user.email.toLowerCase()]);
 
   for (const item of list) {
     item.location = locations.find((l: any) => l.code === item.location_code);

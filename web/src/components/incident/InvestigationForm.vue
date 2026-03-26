@@ -16,20 +16,13 @@
               have access to the file. Use the following as a checklist. Check all that apply.
             </p>
 
-            <v-checkbox
-              v-for="option in collectionOptions"
-              v-model="collections"
-              :value="option.value"
-              :label="option.title"
-              hide-details
-              return-object
-              density="compact" />
+            <v-checkbox v-for="option in collectionOptions" v-model="collections" :value="option.value"
+              :label="option.title" hide-details return-object density="compact" />
 
-            <v-textarea
-              v-model="collections_other"
-              class="mt-2"
-              label="Rationale for any data that was not able to be collected at this time"
-              rows="2" />
+            <v-textarea v-model="collections_other" class="mt-2"
+              label="Rationale for any data that was not able to be collected at this time" rows="2" />
+
+            <v-text-field v-model="documentation_location" label="Documentation Location" />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="1">
@@ -93,6 +86,24 @@
                   <li>
                     Accident or loss that occurred to a person or public/private property, includes financial loss. For
                     example, vehicle damage.
+                  </li>
+                </ul>
+              </v-tooltip>
+            </div>
+
+            <div class="d-flex">
+              <v-checkbox v-model="events" value="vehicle_infraction" hide-details density="compact">
+                <template v-slot:label> Vehicle Infraction </template>
+              </v-checkbox>
+
+              <v-tooltip location="top" width="600" open-delay="250">
+                <template #activator="{ props }">
+                  <v-icon color="primary" class="ml-2 pt-4 cursor-pointer" v-bind="props">mdi-information</v-icon>
+                </template>
+                <ul class="mx-5 my-3">
+                  <li>
+                    Incidents or reports of speeding in YG vehicles, includes driving incidents or other unsafe acts that
+                    could result in injury or damage or loss.
                   </li>
                 </ul>
               </v-tooltip>
@@ -171,18 +182,16 @@
             <v-alert v-if="showWCBLink" type="warning" class="mt-5">
               Events of this type must also be reported within 72 hours to WSCB via the
               <strong>Employer's report of injury or illness (F-0036)</strong> form located at:<br />
-              <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank" style="text-decoration: underline"
-                >https://www.wcb.yk.ca/web-0063/f-0036
+              <a href="https://www.wcb.yk.ca/web-0063/f-0036" target="_blank"
+                style="text-decoration: underline">https://www.wcb.yk.ca/web-0063/f-0036
               </a>
             </v-alert>
 
             <v-alert v-if="showDamageLink" type="warning" class="mt-5">
               Events involving 'Damage' should also be reported via the form at:<br />
-              <a
-                href="https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx"
+              <a href="https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx"
                 target="_blank"
-                style="text-decoration: underline"
-                >https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx
+                style="text-decoration: underline">https://yukongovernment.sharepoint.com/sites/our_department-corporate_services-risk_management-HPW/SitePages/Damage%20and%20Loss.aspx
               </a>
             </v-alert>
 
@@ -200,13 +209,8 @@
 
             <v-select v-model="incidents" label="Incident type" :items="incidentOptions" return-object />
 
-            <v-textarea
-              v-model="incidents_other"
-              class="mt-3"
-              label="Additional applicable information"
-              rows="2"
-              hint="Please do not include names or personal identifiers"
-              persistent-hint />
+            <v-textarea v-model="incidents_other" class="mt-3" label="Additional applicable information" rows="2"
+              hint="Please do not include names or personal identifiers" persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="3">
@@ -214,25 +218,15 @@
             <h3>Immediate Cause</h3>
             <p class="mb-5">Select the most relevant cause.</p>
 
-            <v-select
-              v-model="acts"
-              label="Cause"
-              :items="actsAndConditions"
-              :item-props="true"
-              return-object
+            <v-select v-model="acts" label="Cause" :items="actsAndConditions" :item-props="true" return-object
               item-text="title">
               <template #selection="{ item }">
                 <strong>{{ item.props.subtitle }}:&nbsp;</strong> {{ item.title }}
               </template>
             </v-select>
 
-            <v-textarea
-              v-model="acts_other"
-              class="mt-2"
-              label="Briefly explain"
-              rows="2"
-              hint="Please do not include names or personal identifiers"
-              persistent-hint />
+            <v-textarea v-model="acts_other" class="mt-2" label="Briefly explain" rows="2"
+              hint="Please do not include names or personal identifiers" persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="4">
@@ -240,59 +234,21 @@
             <h3>Contributing Factors</h3>
             <p class="mb-5">Select all that apply.</p>
 
-            <v-select
-              v-model="factors1"
-              label="Environment"
-              :items="factorOptions.filter((f) => f.group === 'Environment')"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
-            <v-select
-              v-model="factors2"
-              label="People"
-              :items="factorOptions.filter((f) => f.group === 'People')"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
-            <v-select
-              v-model="factors3"
-              label="Material"
-              :items="factorOptions.filter((f) => f.group === 'Material')"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
-            <v-select
-              v-model="factors4"
-              label="System"
-              :items="factorOptions.filter((f) => f.group === 'System')"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
-            <v-select
-              v-model="factors5"
-              label="Work process"
-              :items="factorOptions.filter((f) => f.group === 'Work process')"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
+            <v-select v-model="factors1" label="Environment"
+              :items="factorOptions.filter((f) => f.group === 'Environment')" item-text="title" return-object chips
+              clearable multiple />
+            <v-select v-model="factors2" label="People" :items="factorOptions.filter((f) => f.group === 'People')"
+              item-text="title" return-object chips clearable multiple />
+            <v-select v-model="factors3" label="Material" :items="factorOptions.filter((f) => f.group === 'Material')"
+              item-text="title" return-object chips clearable multiple />
+            <v-select v-model="factors4" label="System" :items="factorOptions.filter((f) => f.group === 'System')"
+              item-text="title" return-object chips clearable multiple />
+            <v-select v-model="factors5" label="Work process"
+              :items="factorOptions.filter((f) => f.group === 'Work process')" item-text="title" return-object chips
+              clearable multiple />
 
-            <v-textarea
-              v-model="factors_other"
-              class="mt-2"
-              label="Briefly explain"
-              rows="2"
-              hint="Please do not include names or personal identifiers"
-              persistent-hint />
+            <v-textarea v-model="factors_other" class="mt-2" label="Briefly explain" rows="2"
+              hint="Please do not include names or personal identifiers" persistent-hint />
           </v-card-text>
         </v-window-item>
         <v-window-item :value="5">
@@ -300,22 +256,10 @@
             <h3>Root Cause</h3>
             <p class="mb-5">Select all that apply.</p>
 
-            <v-select
-              v-model="causes"
-              label="Root causes"
-              :items="rootCauseOptions"
-              item-text="title"
-              return-object
-              chips
-              clearable
-              multiple />
-            <v-textarea
-              v-model="causes_other"
-              class="mt-2"
-              label="Briefly explain"
-              rows="2"
-              hint="Please do not include names or personal identifiers"
-              persistent-hint />
+            <v-select v-model="causes" label="Root causes" :items="rootCauseOptions" item-text="title" return-object
+              chips clearable multiple />
+            <v-textarea v-model="causes_other" class="mt-2" label="Briefly explain" rows="2"
+              hint="Please do not include names or personal identifiers" persistent-hint />
           </v-card-text>
         </v-window-item>
       </v-window>
@@ -390,12 +334,15 @@ const hasAllRequiredCollections = computed(() => {
   return collections.value.length > 0;
 });
 
+const documentation_location = ref("");
+
 const events = ref([]);
 const eventOptions = computed(() => {
   const baseOptions = [
     { title: "Injury - First aid", value: "first_aid", required: true },
     { title: "Injury - Medical aid", value: "medical_aid", required: true },
     { title: "Damage", value: "damage", required: true },
+    { title: "Vehicle Infraction", value: "vehicle_infraction", required: true },
     { title: "Service Loss", value: "service_loss", required: true },
     { title: "Environmental impact", value: "environmental", required: true },
     { title: "Serious Incident (as per WSCA)", value: "serious", required: true },
@@ -651,6 +598,7 @@ async function save() {
       factors_other: factors_other.value,
       causes: causes.value,
       causes_other: causes_other.value,
+      documentation_location: documentation_location.value
     },
   };
 
