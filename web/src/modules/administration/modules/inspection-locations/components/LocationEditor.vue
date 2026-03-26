@@ -1,7 +1,7 @@
 <template>
   <v-dialog v-model="visible" persistent max-width="700">
     <v-card v-if="selectedLocation">
-      <v-toolbar color="primary" variant="dark" title="Edit Location">
+      <v-toolbar color="primary" variant="dark" title="Edit Inspection Location">
         <v-spacer></v-spacer>
         <v-btn icon @click="close" color="white"><v-icon>mdi-close</v-icon></v-btn>
       </v-toolbar>

@@ -56,7 +56,8 @@ export class InspectionService {
         "incident_statuses.name as status_name",
         "departments.name as department_name",
         "locations.name as location_name",
-        "inspection_locations.name as inspection_location_name"
+        "inspection_locations.name as inspection_location_name",        
+        "inspection_locations.branch as inspection_location_branch"
       )
       .first();
 

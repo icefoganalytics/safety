@@ -25,17 +25,22 @@
             <v-card-text class="pt-2">
               <v-row>
                 <v-col>
-                  <v-label>Department</v-label>
-                  <v-text-field :value="selectedReport.department_name" append-inner-icon="mdi-lock"
-                    readonly></v-text-field>
-                </v-col>
-                <v-col>
                   <v-label>Reported by</v-label>
                   <v-text-field :value="selectedReport.reporting_person_email" append-inner-icon="mdi-lock"
                     readonly></v-text-field>
                 </v-col>
                 <v-col>
-                  <v-label class="mb-1" style="white-space: inherit">Location</v-label>
+                  <v-label>Department</v-label>
+                  <v-text-field :value="selectedReport.department_name" append-inner-icon="mdi-lock"
+                    readonly></v-text-field>
+                </v-col>
+                <v-col>
+                  <v-label style="white-space: inherit">Branch</v-label>
+                  <v-text-field :model-value="selectedReport.inspection_location_branch" readonly
+                    append-inner-icon="mdi-lock" />
+                </v-col>
+                <v-col>
+                  <v-label style="white-space: inherit">Location</v-label>
                   <v-text-field :model-value="selectedReport.inspection_location_name" readonly
                     append-inner-icon="mdi-lock" />
                 </v-col>

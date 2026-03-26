@@ -214,6 +214,8 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     urgency_code,
     incident_type_id,
     hs_recommendations,
+    committee_supervisor_response,
+    committee_supervisor_rationale,
   } = req.body;
 
   const userIsAdmin =
@@ -234,6 +236,8 @@ reportRouter.put("/:id", async (req: Request, res: Response) => {
     urgency_code,
     incident_type_id,
     hs_recommendations,
+    committee_supervisor_response,
+    committee_supervisor_rationale,
   });
 
   return res.json({
@@ -692,6 +696,13 @@ reportRouter.post(
 
     const incident = await knex("incidents").where({ id }).first();
     if (!incident) return res.status(404).send();
+
+    // If committee review occurred, supervisor must have responded before notification
+    if (incident.committee_review_complete_date && !incident.committee_supervisor_response) {
+      return res.status(400).json({
+        messages: [{ variant: "error", text: "Supervisor must review committee recommendations before sending notification" }],
+      });
+    }
 
     const directorySubmitter = await directoryService.searchByEmail(
       incident.reporting_person_email,

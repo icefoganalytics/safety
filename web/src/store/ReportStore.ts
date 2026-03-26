@@ -247,6 +247,8 @@ export const useReportStore = defineStore("reports", {
         urgency_code: this.selectedReport.urgency_code,
         incident_type_id: this.selectedReport.incident_type_id,
         hs_recommendations: this.selectedReport.hs_recommendations,
+        committee_supervisor_response: this.selectedReport.committee_supervisor_response,
+        committee_supervisor_rationale: this.selectedReport.committee_supervisor_rationale,
       };
 
       const api = useApiStore();
@@ -436,6 +438,8 @@ export interface Incident {
 
   committee_review_request_date?: Date;
   committee_review_complete_date?: Date;
+  committee_supervisor_response?: string;
+  committee_supervisor_rationale?: string;
 
   incident_type_description: string;
   status_name: string;

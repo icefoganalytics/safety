@@ -173,6 +173,8 @@ const isHazardAssessment = computed(() => {
 const isNotification = computed(() => {
   if (isNil(currentStep.value) || isNil(currentStep.value.step_title)) return false;
   if (selectedReport.value.committee_review_request_date && !selectedReport.value.committee_review_complete_date) return false;
+  // If committee review happened, supervisor must have responded before notification
+  if (selectedReport.value.committee_review_complete_date && !selectedReport.value.committee_supervisor_response) return false;
   return currentStep.value.step_title.includes("Notification");
 });
 const isReview = computed(() => {

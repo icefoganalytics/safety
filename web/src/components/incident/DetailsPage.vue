@@ -116,18 +116,35 @@
           <v-card class="default mb-5" v-if="hasCommitteeReview">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
               <div style="width: 100%" class="d-flex">
-                <h4 class="text-h6">Committee Control Plan</h4>
+                <h4 class="text-h6">Committee Review</h4>
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
-              <CommitteeActionList @showAction="doShowActionEdit"></CommitteeActionList>
+              <v-label class="mb-1" style="white-space: inherit">Health and Safety Committee
+                Recommendations</v-label>
+              <v-textarea v-model="selectedReport.hs_recommendations" :readonly="!canEditRecommendations"
+                :append-inner-icon="canEditRecommendations ? '' : 'mdi-lock'"
+                hint="Please do not include names or personal identifiers" persistent-hint />
 
-              <v-btn v-if="canAddReviewTask" class="mb-0" size="small" color="info" @click="addReviewTaskClick">Add
-                Task</v-btn>
+              <div v-if="selectedReport.committee_review_complete_date" class="mt-4">
+                <v-label class="mb-1">Supervisor review of committee recommendations</v-label>
+                <v-select v-model="selectedReport.committee_supervisor_response" :readonly="!canEditRecommendations"
+                  :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'" :items="committeeResponseOptions"
+                  hide-details />
+                <div
+                  v-if="selectedReport.committee_supervisor_response === 'Supervisor rejects HSC recommendation. (If so, provide rationale below)'"
+                  class="mt-4">
+                  <v-label>Rationale</v-label>
+                  <v-textarea v-model="selectedReport.committee_supervisor_rationale"
+                    :readonly="!canEditRecommendations" :append-inner-icon="(canEditRecommendations) ? '' : 'mdi-lock'"
+                    hide-details />
+                </div>
+              </div>
 
-              <CommitteeAssessmentForm v-model="showReviewDialog" :incident-id="selectedReport.id"
-                :incident_type_description="selectedReport.incident_type_description" :hazard-report="selectedReport"
-                @complete="actionReload" @close="showReviewDialog = false" />
+              <div class="mt-4">
+                <v-btn v-if="canEditRecommendations" color="primary" class="my-0" @click="saveClick">Save</v-btn>
+              </div>
+
             </v-card-text>
           </v-card>
         </v-col>
@@ -167,18 +184,9 @@
                     :hint="canEdit ? 'Please do not include names or personal identifiers' : ''"
                     :persistent-hint="canEdit" />
                 </div>
-
-                <div v-if="hasCommitteeReview || selectedReport.hs_recommendations" class="mt-4">
-                  <v-label class="mb-1" style="white-space: inherit">Health and Safety Committee
-                    Recommendations</v-label>
-                  <v-textarea v-model="selectedReport.hs_recommendations" :append-inner-icon="(canEdit || isCommittee) && hasCommitteeReview && !selectedReport.committee_review_complete_date ? '' : 'mdi-lock'
-                    " readonly hint="Please do not include names or personal identifiers" persistent-hint />
-                </div>
               </v-col>
 
-              <v-col
-                v-if="canEdit || (isCommittee && hasCommitteeReview && !selectedReport.committee_review_complete_date)"
-                cols="12" md="12">
+              <v-col v-if="canEdit" cols="12" md="12">
                 <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
               </v-col>
             </v-row>
@@ -205,11 +213,9 @@ const { smAndDown } = useDisplay();
 
 import OperationMenu from "@/components/incident/OperationMenu.vue";
 import ActionList from "@/components/action/ActionList.vue";
-import CommitteeActionList from "@/components/action/CommitteeActionList.vue";
 import ActionDialog from "@/components/action/ActionDialog.vue";
 import InvestigationCard from "./InvestigationCard.vue";
 import HazardAssessmentForm from "./HazardAssessmentForm.vue";
-import CommitteeAssessmentForm from "./CommitteeAssessmentForm.vue";
 
 import { useReportStore } from "@/store/ReportStore";
 import { useUserStore } from "@/store/UserStore";
@@ -243,7 +249,6 @@ await loadReport(reportId);
 
 const showActionEdit = ref(false);
 const showHazardDialog = ref(false);
-const showReviewDialog = ref(false);
 const actionToEdit = ref(null);
 
 const userStore = useUserStore();
@@ -283,18 +288,31 @@ const isReview = computed(() => {
 const canAddTask = computed(() => {
   if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
   if (!(isSupervisor.value || isSystemAdmin.value)) return false;
-  if (selectedReport.value.incident_type_description != "Hazard") return false;
+  if (selectedReport.value.status_code !== "Open") return false;
 
-  return currentStep.value.step_title == "Control the Hazard";
+  if (selectedReport.value.incident_type_description == "Hazard") {
+    return currentStep.value.step_title == "Control the Hazard";
+  }
+
+  // For non-hazard incidents, supervisor can add tasks after committee review is complete
+  if (hasCommitteeReview.value && selectedReport.value.committee_review_complete_date) {
+    return true;
+  }
+
+  return currentStep.value.step_title == "Control Plan";
 });
 
-const canAddReviewTask = computed(() => {
-  if (isNil(selectedReport.value) || isNil(currentStep.value)) return false;
-  if (selectedReport.value.incident_type_description == "Hazard") return false;
-  if (!(isCommittee.value || isSystemAdmin.value)) return false;
-
-  return isReview.value;
+const canEditRecommendations = computed(() => {
+  if (!hasCommitteeReview.value) return false;
+  if (selectedReport.value.status_code !== "Open") return false;
+  return isSupervisor.value || isSystemAdmin.value;
 });
+
+const committeeResponseOptions = [
+  'Supervisor accepts HSC recommendation as is',
+  'Supervisor provides an alternative recommendation',
+  'Supervisor rejects HSC recommendation. (If so, provide rationale below)',
+];
 
 onMounted(() => {
   if (selectedAction.value) {
@@ -399,10 +417,6 @@ function openAttachmentClick(attachment) {
 
 function addTaskClick() {
   showHazardDialog.value = true;
-}
-
-function addReviewTaskClick() {
-  showReviewDialog.value = true;
 }
 </script>
 
