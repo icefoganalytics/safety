@@ -326,6 +326,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
   } = req.body;
 
   let reporting_person_email = req.user.email;
+  let investigation_notes = null;
 
   await directoryService.connect();
 
@@ -335,7 +336,8 @@ reportRouter.post("/", async (req: Request, res: Response) => {
     if (directoryOnBehalf && directoryOnBehalf.length == 1) {
       reporting_person_email = directoryOnBehalf[0].email;
     } else {
-      reporting_person_email = on_behalf_email;
+      reporting_person_email = req.user.email;
+      investigation_notes = `Report submitted on behalf of ${on_behalf_email}.`;
     }
   }
 
@@ -380,6 +382,7 @@ reportRouter.post("/", async (req: Request, res: Response) => {
       location_code,
       location_detail,
       slug: generateSlug(),
+      investigation_notes,
       identifier: await generateIdentifier(trx),
       source: "online",
     } as Incident;
@@ -698,9 +701,17 @@ reportRouter.post(
     if (!incident) return res.status(404).send();
 
     // If committee review occurred, supervisor must have responded before notification
-    if (incident.committee_review_complete_date && !incident.committee_supervisor_response) {
+    if (
+      incident.committee_review_complete_date &&
+      !incident.committee_supervisor_response
+    ) {
       return res.status(400).json({
-        messages: [{ variant: "error", text: "Supervisor must review committee recommendations before sending notification" }],
+        messages: [
+          {
+            variant: "error",
+            text: "Supervisor must review committee recommendations before sending notification",
+          },
+        ],
       });
     }
 
