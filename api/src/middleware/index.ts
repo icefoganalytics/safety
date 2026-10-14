@@ -14,7 +14,7 @@ export async function ReturnValidationErrors(req: Request, res: Response, next: 
 }
 
 export async function RequireAdmin(req: Request, res: Response, next: NextFunction) {
-  if (isNil(req.user.roles || req.user.roles.length == 0)) {
+  if (isNil(req.user.roles) || req.user.roles.length == 0) {
     return res.status(403).json({ error: "Unauthorized" });
   }
 

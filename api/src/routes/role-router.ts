@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import { db as knex } from "../data/db-client";
 import { isEmpty } from "lodash";
 import { UserRole } from "../data/models";
+import { RequireAdmin } from "../middleware";
 import { InsertableDate } from "../utils/formatters";
 import { DateTime } from "luxon";
 
@@ -12,7 +13,7 @@ roleRouter.get("/", async (req: Request, res: Response) => {
   return res.json({ data: list });
 });
 
-roleRouter.post("/user/:user_id", async (req: Request, res: Response) => {
+roleRouter.post("/user/:user_id", RequireAdmin, async (req: Request, res: Response) => {
   const { user_id } = req.params;
   const { roles } = req.body;
 
