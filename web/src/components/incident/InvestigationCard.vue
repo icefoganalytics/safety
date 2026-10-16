@@ -5,29 +5,52 @@
     </v-card-item>
     <v-card-text>
       <p class="my-1 mt-3">
-        Investigation Completed on {{ formatDate(investigation.investigation_data.completed_on) }} by
+        Investigation Completed on
+        {{ formatDate(investigation.investigation_data.completed_on) }} by
         {{ investigation.investigation_data.completed_by }}
       </p>
       <v-row class="mt-0 pb-0">
-        <v-col cols="12" md="6" class="pb-0">
-          <v-sheet border rounded class="pa-3 mb-4">
+        <v-col
+          cols="12"
+          md="6"
+          class="pb-0"
+        >
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Data Collection</h4>
             <ul class="ml-4">
-              <li v-for="collection in investigation.investigation_data.collections.map((d) => d.title)">
+              <li
+                v-for="collection in investigation.investigation_data.collections.map(
+                  (d) => d.title
+                )"
+              >
                 {{ collection }}
               </li>
             </ul>
 
-            <p v-if="investigation.investigation_data.collections_other" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.collections_other"
+              class="mt-1"
+            >
               {{ investigation.investigation_data.collections_other }}
             </p>
 
-            <p v-if="investigation.investigation_data.documentation_location" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.documentation_location"
+              class="mt-1"
+            >
               Documentation Location: {{ investigation.investigation_data.documentation_location }}
             </p>
           </v-sheet>
 
-          <v-sheet border rounded class="pa-3 mb-4">
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Event Type</h4>
             <ul class="ml-4">
               <li v-for="collection in investigation.investigation_data.events.map((d) => d.title)">
@@ -36,7 +59,11 @@
             </ul>
           </v-sheet>
 
-          <v-sheet border rounded class="pa-3 mb-4">
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Incident Type</h4>
             <ul class="ml-4">
               <li>
@@ -44,42 +71,69 @@
               </li>
             </ul>
 
-            <p v-if="investigation.investigation_data.incidents_other" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.incidents_other"
+              class="mt-1"
+            >
               {{ investigation.investigation_data.incidents_other }}
             </p>
           </v-sheet>
         </v-col>
-        <v-col cols="12" md="6" class="pb-0">
-          <v-sheet border rounded class="pa-3 mb-4">
+        <v-col
+          cols="12"
+          md="6"
+          class="pb-0"
+        >
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Immediate Cause</h4>
 
             <ul class="ml-4">
               <li>
-                <strong>{{ investigation.investigation_data.acts.subtitle }}:&nbsp;</strong>{{
-                  investigation.investigation_data.acts.title }}
+                <strong>{{ investigation.investigation_data.acts.subtitle }}:&nbsp;</strong
+                >{{ investigation.investigation_data.acts.title }}
               </li>
             </ul>
 
-            <p v-if="investigation.investigation_data.acts_other" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.acts_other"
+              class="mt-1"
+            >
               {{ investigation.investigation_data.acts_other }}
             </p>
           </v-sheet>
 
-          <v-sheet border rounded class="pa-3 mb-4">
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Contributing Factors</h4>
 
             <ul class="ml-4">
-              <li v-for="collection in investigation.investigation_data.factors.map((d) => d.title)">
+              <li
+                v-for="collection in investigation.investigation_data.factors.map((d) => d.title)"
+              >
                 {{ collection }}
               </li>
             </ul>
 
-            <p v-if="investigation.investigation_data.factors_other" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.factors_other"
+              class="mt-1"
+            >
               {{ investigation.investigation_data.factors_other }}
             </p>
           </v-sheet>
 
-          <v-sheet border rounded class="pa-3 mb-4">
+          <v-sheet
+            border
+            rounded
+            class="pa-3 mb-4"
+          >
             <h4 class="mb-1">Root Cause</h4>
 
             <ul class="ml-4">
@@ -88,7 +142,10 @@
               </li>
             </ul>
 
-            <p v-if="investigation.investigation_data.causes_other" class="mt-1">
+            <p
+              v-if="investigation.investigation_data.causes_other"
+              class="mt-1"
+            >
               {{ investigation.investigation_data.causes_other }}
             </p>
           </v-sheet>
@@ -99,12 +156,12 @@
 </template>
 
 <script setup>
-import { DateTime } from "luxon";
+import { DateTime } from "luxon"
 
-defineProps(["investigation"]);
+defineProps(["investigation"])
 
 function formatDate(input) {
-  if (!input) return "";
-  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd");
+  if (!input) return ""
+  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd")
 }
 </script>

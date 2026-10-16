@@ -1,8 +1,8 @@
-import knex from "knex";
-import { HazardStatus, HazardStatuses } from "../models";
+import knex from "knex"
+import { HazardStatus, HazardStatuses } from "../models"
 
 export async function seed(knex: knex.Knex) {
-  const items = await knex<HazardStatus>("hazard_statuses");
+  const items = await knex<HazardStatus>("hazard_statuses")
 
   const toInsert = [
     HazardStatuses.OPEN,
@@ -10,11 +10,11 @@ export async function seed(knex: knex.Knex) {
     HazardStatuses.DUPLICATE,
     HazardStatuses.NO_ACTION,
     HazardStatuses.REMEDIATED,
-  ] as Array<HazardStatus>;
+  ] as Array<HazardStatus>
 
   for (const item of toInsert) {
-    if (items.find((d) => d.code == item.code)) continue;
+    if (items.find((d) => d.code == item.code)) continue
 
-    await knex("hazard_statuses").insert(item);
+    await knex("hazard_statuses").insert(item)
   }
 }

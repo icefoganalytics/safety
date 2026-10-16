@@ -1,14 +1,14 @@
-import express, { Request, Response } from "express";
-import { isArray } from "lodash";
+import express, { Request, Response } from "express"
+import { isArray } from "lodash"
 
-import { db as knex } from "../data/db-client";
+import { db as knex } from "../data/db-client"
 import {
   DepartmentService,
   UnifiedDirectoryService,
   EmailService,
   IncidentService,
   UserService,
-} from "../services";
+} from "../services"
 import {
   Hazard,
   HazardStatuses,
@@ -20,44 +20,37 @@ import {
   IncidentStep,
   Scopes,
   SensitivityLevels,
-} from "../data/models";
-import { InsertableDate } from "../utils/formatters";
-import { generateIdentifier, generateSlug } from "../utils/generateSlug";
-import { DateTime } from "luxon";
+} from "../data/models"
+import { InsertableDate } from "../utils/formatters"
+import { generateIdentifier, generateSlug } from "../utils/generateSlug"
+import { DateTime } from "luxon"
 
-export const offlineReportRouter = express.Router();
-const db = new IncidentService();
-const emailService = new EmailService();
-const directoryService = new UnifiedDirectoryService();
-const userService = new UserService();
+export const offlineReportRouter = express.Router()
+const db = new IncidentService()
+const emailService = new EmailService()
+const directoryService = new UnifiedDirectoryService()
+const userService = new UserService()
 
 offlineReportRouter.post("/", async (req: Request, res: Response) => {
-  req.body.status = "Initial Report";
+  req.body.status = "Initial Report"
 
-  let {
-    date,
-    eventType,
-    description,
-    location_code,
-    location_detail,
-    supervisor_email,
-    urgency,
-  } = req.body;
+  let { date, eventType, description, location_code, location_detail, supervisor_email, urgency } =
+    req.body
 
-  let currentUserEmail = req.body.on_behalf_email;
-  let currentUserId = 1;
-  let currentUserName = req.body.on_behalf_email;
+  let currentUserEmail = req.body.on_behalf_email
+  let currentUserId = 1
+  let currentUserName = req.body.on_behalf_email
 
-  const existingUser = await userService.getByEmail(currentUserEmail);
+  const existingUser = await userService.getByEmail(currentUserEmail)
 
   if (existingUser) {
-    currentUserId = existingUser.id;
-    currentUserEmail = existingUser.email;
-    currentUserName = existingUser.display_name;
+    currentUserId = existingUser.id
+    currentUserEmail = existingUser.email
+    currentUserName = existingUser.display_name
 
-    console.log("Using Existing user", req.body.on_behalf_email);
+    console.log("Using Existing user", req.body.on_behalf_email)
   } else {
-    console.log("Creating new user", req.body.on_behalf_email);
+    console.log("Creating new user", req.body.on_behalf_email)
 
     const createdUser = await userService.create({
       department: "",
@@ -71,41 +64,35 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       title: "",
       is_active: true,
       auth_subject: currentUserEmail,
-    });
+    })
 
-    currentUserId = createdUser[0].id;
+    currentUserId = createdUser[0].id
   }
 
-  req.body.email = currentUserEmail;
+  req.body.email = currentUserEmail
 
-  const reporting_person_email = req.body.email;
+  const reporting_person_email = req.body.email
 
-  const defaultHazardType = await knex("hazard_types")
-    .orderBy("id")
-    .select("id")
-    .first();
+  const defaultHazardType = await knex("hazard_types").orderBy("id").select("id").first()
   const defaultIncidentType = await knex("incident_types")
     .where({ name: eventType })
     .select("id")
-    .first();
+    .first()
   const department = await new DepartmentService().determineDepartment(
     [reporting_person_email, supervisor_email],
-    location_code,
-  );
+    location_code
+  )
 
-  await directoryService.connect();
-  const directorySubmitter = await directoryService.searchByEmail(
-    reporting_person_email,
-  );
-  const directorySupervisor =
-    await directoryService.searchByEmail(supervisor_email);
+  await directoryService.connect()
+  const directorySubmitter = await directoryService.searchByEmail(reporting_person_email)
+  const directorySupervisor = await directoryService.searchByEmail(supervisor_email)
 
   const employeeName =
     directorySubmitter && directorySubmitter[0]
       ? directorySubmitter[0].display_name
-      : reporting_person_email;
+      : reporting_person_email
 
-  const trx = await knex.transaction();
+  const trx = await knex.transaction()
 
   try {
     const incident = {
@@ -124,14 +111,12 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
       slug: generateSlug(),
       identifier: await generateIdentifier(trx),
       source: "offline",
-    } as Incident;
+    } as Incident
 
-    const insertedIncidents = await trx("incidents")
-      .insert(incident)
-      .returning("*");
-    let insertedIncidentId = insertedIncidents[0].id;
+    const insertedIncidents = await trx("incidents").insert(incident).returning("*")
+    let insertedIncidentId = insertedIncidents[0].id
 
-    let steps = new Array<string>();
+    let steps = new Array<string>()
 
     if (eventType == "hazard") {
       steps = [
@@ -139,7 +124,7 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
         "Assessment of Hazard",
         "Control the Hazard",
         "Employee Notification",
-      ];
+      ]
     } else {
       steps = [
         "Incident Reported",
@@ -147,26 +132,26 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
         "Control Plan",
         "Controls Implemented",
         "Employee Notification",
-      ];
+      ]
     }
 
     for (let i = 1; i <= steps.length; i++) {
-      const step_title = steps[i - 1];
+      const step_title = steps[i - 1]
 
       const step = {
         incident_id: insertedIncidentId,
         step_title,
         order: i,
         activate_date: i == i ? new Date() : null,
-      } as IncidentStep;
+      } as IncidentStep
 
       if (i == 1) {
-        (step as any).complete_date = InsertableDate(DateTime.utc().toISO());
-        step.complete_name = currentUserName;
-        step.complete_user_id = currentUserId;
+        ;(step as any).complete_date = InsertableDate(DateTime.utc().toISO())
+        step.complete_name = currentUserName
+        step.complete_user_id = currentUserId
       }
 
-      await trx("incident_steps").insert(step);
+      await trx("incident_steps").insert(step)
     }
 
     if (directorySubmitter && directorySubmitter.length > 0) {
@@ -176,15 +161,15 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
           email: reporting_person_email,
         },
         employeeName,
-        insertedIncidents[0],
-      );
+        insertedIncidents[0]
+      )
 
       if (currentUserEmail != reporting_person_email) {
         await emailService.sendIncidentReporterNotification(
           { fullName: currentUserName, email: currentUserEmail },
           employeeName,
-          insertedIncidents[0],
-        );
+          insertedIncidents[0]
+        )
       }
     }
 
@@ -195,17 +180,17 @@ offlineReportRouter.post("/", async (req: Request, res: Response) => {
           email: supervisor_email,
         },
         employeeName,
-        insertedIncidents[0],
-      );
+        insertedIncidents[0]
+      )
     }
 
-    await trx.commit();
-    console.log("ALL GOOD!");
-    return res.status(200).json({ data: {} });
+    await trx.commit()
+    console.log("ALL GOOD!")
+    return res.status(200).json({ data: {} })
   } catch (error) {
-    trx.rollback();
-    console.log("ERROR IN TRANSACTION", error);
+    trx.rollback()
+    console.log("ERROR IN TRANSACTION", error)
   }
 
-  return res.status(400).json({ data: {} });
-});
+  return res.status(400).json({ data: {} })
+})

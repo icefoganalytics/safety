@@ -1,0 +1,11 @@
+{
+  "name": "dt-development-tooling",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^8.9.0",
+    "prettier": "^3.8.3",
+    "prettier-plugin-embed": "^0.4.15",
+    "prettier-plugin-sql": "^0.18.1"
+  }
+}

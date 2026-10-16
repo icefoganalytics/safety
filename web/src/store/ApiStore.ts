@@ -1,33 +1,33 @@
-import { defineStore, acceptHMRUpdate } from "pinia";
-import { useNotificationStore } from "@/store/NotificationStore";
-import { SecureAPICall, APICall } from "./helpers/axiosAPIConfig";
-import auth0 from "@/plugins/auth";
-import { router } from "@/routes";
+import { defineStore, acceptHMRUpdate } from "pinia"
+import { useNotificationStore } from "@/store/NotificationStore"
+import { SecureAPICall, APICall } from "./helpers/axiosAPIConfig"
+import auth0 from "@/plugins/auth"
+import { router } from "@/routes"
 
 //refs are reactive variables
 //computed are reactive variables that are derived from other reactive variables
 // functions are equivalent to methods/actions in vue2
 
 export const useApiStore = defineStore("api", () => {
-  const m = useNotificationStore();
+  const m = useNotificationStore()
 
   function doApiErrorMessage(err: any) {
-    if (!err) return;
-    let status_code = 500;
-    let text = err.message;
+    if (!err) return
+    let status_code = 500
+    let text = err.message
 
     if (err.response) {
-      status_code = err.response.status || 500;
-      if (err.response.data && err.response.data.message) text = err.response.data.message;
+      status_code = err.response.status || 500
+      if (err.response.data && err.response.data.message) text = err.response.data.message
     }
 
     if (status_code == 403) {
-      router.push("/NotAvailable");
-      return;
+      router.push("/NotAvailable")
+      return
     }
     if (status_code == 404) {
-      router.push("/NotFound");
-      return;
+      router.push("/NotFound")
+      return
     }
 
     let message = {
@@ -35,26 +35,26 @@ export const useApiStore = defineStore("api", () => {
       text,
       icon: "mdi-error",
       variant: "error",
-    };
-    m.notify(message);
+    }
+    m.notify(message)
   }
 
-  const timer = (ms: number) => new Promise((res) => setTimeout(res, ms));
+  const timer = (ms: number) => new Promise((res) => setTimeout(res, ms))
 
   async function secureCall(method: string, url: string, data?: any, ignoreError: boolean = false) {
-    let response;
+    let response
 
     if (auth0.isLoading.value != false) {
       for (let i = 0; i < 30; i++) {
-        await timer(200);
-        if (auth0.isLoading.value != true) break;
+        await timer(200)
+        if (auth0.isLoading.value != true) break
       }
     }
 
     if (!auth0.isAuthenticated.value) {
-      console.log("Not Authenticated");
-      response = { error: "Not Authenticated" };
-      throw Error("Not Authenticated");
+      console.log("Not Authenticated")
+      response = { error: "Not Authenticated" }
+      throw Error("Not Authenticated")
     }
 
     response = await auth0.getAccessTokenSilently().then(async (token) => {
@@ -63,23 +63,23 @@ export const useApiStore = defineStore("api", () => {
         .then((res) => {
           if (res.data.messages && res.data.messages.length > 0) {
             for (const message of res.data.messages) {
-              m.notify(message);
+              m.notify(message)
             }
           }
 
-          return res.data;
+          return res.data
         })
         .catch((err) => {
-          if (!ignoreError) doApiErrorMessage(err);
-          return { error: err };
-        });
-    });
+          if (!ignoreError) doApiErrorMessage(err)
+          return { error: err }
+        })
+    })
 
-    return response;
+    return response
   }
 
   async function secureUpload(method: string, url: string, data?: any) {
-    let response;
+    let response
     /* if (!auth.isAuthenticated.value) {
       console.log("Not Authenticated");
       response = { error: "Not Authenticated" };
@@ -87,47 +87,52 @@ export const useApiStore = defineStore("api", () => {
     } */
     response = await auth0.getAccessTokenSilently().then(async (token) => {
       return await SecureAPICall(method, token)
-        .request({ url, data, headers: { "Content-Type": "multipart/form-data" }, validateStatus: () => true })
+        .request({
+          url,
+          data,
+          headers: { "Content-Type": "multipart/form-data" },
+          validateStatus: () => true,
+        })
         .then((res) => {
-          return res.data;
+          return res.data
         })
         .catch((err) => {
-          const serverMsg = err.response?.data?.error;
-          doApiErrorMessage(err);
-          return { error: serverMsg || err.message };
-        });
-    });
+          const serverMsg = err.response?.data?.error
+          doApiErrorMessage(err)
+          return { error: serverMsg || err.message }
+        })
+    })
 
-    return response;
+    return response
   }
 
   async function call(method: string, url: string, data?: any) {
     let response = await APICall(method)
       .request({ url, data })
       .then((res) => {
-        doApiErrorMessage(res.data.error);
-        return res.data;
+        doApiErrorMessage(res.data.error)
+        return res.data
       })
       .catch((err) => {
-        doApiErrorMessage(err);
-        return { error: err };
-      });
+        doApiErrorMessage(err)
+        return { error: err }
+      })
 
-    return response;
+    return response
   }
 
   async function upload(method: string, url: string, data?: any) {
     let response = await APICall(method)
       .request({ url, data, headers: { "Content-Type": "multipart/form-data" } })
       .then((res) => {
-        return res.data;
+        return res.data
       })
       .catch((err) => {
-        doApiErrorMessage(err);
-        return { error: err };
-      });
+        doApiErrorMessage(err)
+        return { error: err }
+      })
 
-    return response;
+    return response
   }
 
   return {
@@ -135,10 +140,10 @@ export const useApiStore = defineStore("api", () => {
     secureCall,
     upload,
     call,
-  };
-});
+  }
+})
 
 // hot reloading for this store
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useApiStore, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useApiStore, import.meta.hot))
 }

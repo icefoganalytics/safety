@@ -1,20 +1,27 @@
 <template>
-  <v-dialog max-width="650px" persistent>
+  <v-dialog
+    max-width="650px"
+    persistent
+  >
     <v-card>
       <v-toolbar color="info">
         <v-toolbar-title class="d-flex"> Employee Notification </v-toolbar-title>
         <v-spacer />
-        <v-btn icon="mdi-close" @click="close"></v-btn>
+        <v-btn
+          icon="mdi-close"
+          @click="close"
+        ></v-btn>
       </v-toolbar>
 
       <v-card-text>
         <h3>Notifications</h3>
         <p class="mb-5">
-          If you added any linked users, they will appear below. You can notify them that the control is in place.
+          If you added any linked users, they will appear below. You can notify them that the
+          control is in place.
         </p>
         <p class="mb-5">
-          If you didn't add anyone, or you decide not to notify them, you can just select "Notify Employee and Complete
-          Step".
+          If you didn't add anyone, or you decide not to notify them, you can just select "Notify
+          Employee and Complete Step".
         </p>
 
         <v-checkbox
@@ -25,14 +32,24 @@
           :value="user.user_email"
           hide-details
           density="compact"
-          class="my-0 py-0" />
+          class="my-0 py-0"
+        />
 
         <div class="d-flex mt-5">
-          <v-btn :disabled="isEmpty(notificationEmails)" color="info" @click="notifyClick">Notify above</v-btn>
+          <v-btn
+            :disabled="isEmpty(notificationEmails)"
+            color="info"
+            @click="notifyClick"
+            >Notify above</v-btn
+          >
 
           <v-spacer />
 
-          <v-btn color="primary" @click="save">Notify Employee and Complete Step</v-btn>
+          <v-btn
+            color="primary"
+            @click="save"
+            >Notify Employee and Complete Step</v-btn
+          >
         </div>
       </v-card-text>
     </v-card>
@@ -40,43 +57,43 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { storeToRefs } from "pinia";
-import { isEmpty } from "lodash";
+import { ref } from "vue"
+import { storeToRefs } from "pinia"
+import { isEmpty } from "lodash"
 
-import { useReportStore } from "@/store/ReportStore";
-import { useInterfaceStore } from "@/store/InterfaceStore";
+import { useReportStore } from "@/store/ReportStore"
+import { useInterfaceStore } from "@/store/InterfaceStore"
 
-const props = defineProps(["incidentId", "incident_type_description"]);
-const emits = defineEmits(["complete", "close"]);
+const props = defineProps(["incidentId", "incident_type_description"])
+const emits = defineEmits(["complete", "close"])
 
-const reportStore = useReportStore();
-const { sendNotification, sendEmployeeNotification } = reportStore;
-const { linkedUsers } = storeToRefs(reportStore);
+const reportStore = useReportStore()
+const { sendNotification, sendEmployeeNotification } = reportStore
+const { linkedUsers } = storeToRefs(reportStore)
 
-const interfaceStore = useInterfaceStore();
-const { showOverlay, hideOverlay } = interfaceStore;
+const interfaceStore = useInterfaceStore()
+const { showOverlay, hideOverlay } = interfaceStore
 
-const notificationEmails = ref([]);
+const notificationEmails = ref([])
 
 function close() {
-  emits("close");
+  emits("close")
 }
 
 async function notifyClick() {
-  showOverlay("Sending Notifications");
-  await sendNotification(notificationEmails.value.join(", "));
-  hideOverlay();
+  showOverlay("Sending Notifications")
+  await sendNotification(notificationEmails.value.join(", "))
+  hideOverlay()
 }
 
 async function save() {
-  showOverlay("Sending Notification");
+  showOverlay("Sending Notification")
 
-  await sendEmployeeNotification();
+  await sendEmployeeNotification()
 
-  emits("complete");
-  close();
-  hideOverlay();
+  emits("complete")
+  close()
+  hideOverlay()
 }
 
 function makeTitleCase(str) {
@@ -84,6 +101,6 @@ function makeTitleCase(str) {
     .toLowerCase()
     .split(" ")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .join(" ")
 }
 </script>

@@ -1,32 +1,43 @@
 <template>
-  <v-dialog v-model="show" max-width="650px" persistent>
+  <v-dialog
+    v-model="show"
+    max-width="650px"
+    persistent
+  >
     <v-card>
       <v-toolbar color="info">
         <v-toolbar-title class="no-ellipsis"> Committee Recommendation </v-toolbar-title>
         <v-spacer />
-        <v-btn icon="mdi-close" @click="close"></v-btn>
+        <v-btn
+          icon="mdi-close"
+          @click="close"
+        ></v-btn>
       </v-toolbar>
-      <CommitteeActionCreateForm :action="action" @do-close="close" @save="save" />
+      <CommitteeActionCreateForm
+        :action="action"
+        @do-close="close"
+        @save="save"
+      />
     </v-card>
   </v-dialog>
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
-import { useUserStore } from "@/store/UserStore";
-import { useInterfaceStore } from "@/store/InterfaceStore";
-import { useActionStore } from "@/store/ActionStore";
-import CommitteeActionCreateForm from "@/components/action/CommitteeActionCreateForm.vue";
+import { ref, watch } from "vue"
+import { useUserStore } from "@/store/UserStore"
+import { useInterfaceStore } from "@/store/InterfaceStore"
+import { useActionStore } from "@/store/ActionStore"
+import CommitteeActionCreateForm from "@/components/action/CommitteeActionCreateForm.vue"
 
-const props = defineProps(["incidentId", "incident_type_description", "hazardReport", "modelValue"]);
-const emits = defineEmits(["complete", "close"]);
+const props = defineProps(["incidentId", "incident_type_description", "hazardReport", "modelValue"])
+const emits = defineEmits(["complete", "close"])
 
-const show = ref(false);
+const show = ref(false)
 
-const actionStore = useActionStore();
-const { saveAction } = actionStore;
+const actionStore = useActionStore()
+const { saveAction } = actionStore
 
-const action = ref({ categories: [] });
+const action = ref({ categories: [] })
 
 watch(
   () => props.modelValue,
@@ -36,26 +47,26 @@ watch(
         description: "",
         incident_id: props.incidentId,
         categories: [],
-      };
+      }
     }
-    show.value = val;
+    show.value = val
   }
-);
+)
 
-const interfaceStore = useInterfaceStore();
-const { showOverlay, hideOverlay } = interfaceStore;
+const interfaceStore = useInterfaceStore()
+const { showOverlay, hideOverlay } = interfaceStore
 
-const userStore = useUserStore();
-const { user } = userStore;
+const userStore = useUserStore()
+const { user } = userStore
 
 function close() {
-  emits("close");
+  emits("close")
 }
 
 async function save() {
-  showOverlay("Saving Assessment");
+  showOverlay("Saving Assessment")
 
-  const hazard_type_id = 1;
+  const hazard_type_id = 1
 
   const item = {
     ...action.value,
@@ -64,14 +75,14 @@ async function save() {
     actor_display_name: user.display_name,
     hazard_type_id,
     is_committee_task: 1,
-  };
+  }
 
-  await saveAction(item);
+  await saveAction(item)
 
-  emits("complete");
-  close();
+  emits("complete")
+  close()
   //step.value = 0;
-  hideOverlay();
+  hideOverlay()
 }
 </script>
 

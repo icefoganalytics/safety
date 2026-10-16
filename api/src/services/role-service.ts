@@ -1,4 +1,4 @@
-import { db } from "../data/db-client";
+import { db } from "../data/db-client"
 
 export class RoleService {
   getRolesForUser(user_id: number) {
@@ -18,6 +18,6 @@ export class RoleService {
         "role_types.name",
         "role_types.permissions",
         "role_types.description"
-      );
+      )
   }
 }

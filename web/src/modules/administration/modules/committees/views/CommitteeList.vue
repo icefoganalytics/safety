@@ -5,18 +5,29 @@
     style="margin: -13px -16px 10px -16px"
     class="pl-4 mb-4"
     color="white"
-    active-color="#fff">
+    active-color="#fff"
+  >
     <template v-slot:prepend>
-      <v-icon color="white" icon="mdi-home"></v-icon>
+      <v-icon
+        color="white"
+        icon="mdi-home"
+      ></v-icon>
     </template>
     <template v-slot:divider>
-      <v-icon color="white" icon="mdi-chevron-right"></v-icon>
+      <v-icon
+        color="white"
+        icon="mdi-chevron-right"
+      ></v-icon>
     </template>
   </v-breadcrumbs>
 
   <h1>Committees</h1>
 
-  <base-card showHeader="t" heading="" elevation="0">
+  <base-card
+    showHeader="t"
+    heading=""
+    elevation="0"
+  >
     <template v-slot:left>
       <v-text-field
         v-model="search"
@@ -25,22 +36,29 @@
         hide-details
         append-inner-icon="mdi-magnify"
         density="compact"
-        class="ml-2"></v-text-field>
+        class="ml-2"
+      ></v-text-field>
     </template>
     <template v-slot:right>
       <add-committee :onComplete="loadItems"></add-committee>
     </template>
 
-    <v-data-table :search="search" :headers="headers" :items="items" :loading="isLoading" @click:row="rowClick">
+    <v-data-table
+      :search="search"
+      :headers="headers"
+      :items="items"
+      :loading="isLoading"
+      @click:row="rowClick"
+    >
     </v-data-table>
   </base-card>
 </template>
 <script lang="ts">
-import { mapActions, mapState } from "pinia";
+import { mapActions, mapState } from "pinia"
 
-import AddCommittee from "@/modules/administration/modules/committees/components/AddCommittee.vue";
+import AddCommittee from "@/modules/administration/modules/committees/components/AddCommittee.vue"
 
-import { useCommitteeAdminStore } from "../store";
+import { useCommitteeAdminStore } from "../store"
 
 export default {
   components: { AddCommittee },
@@ -55,10 +73,10 @@ export default {
   computed: {
     ...mapState(useCommitteeAdminStore, ["committees", "isLoading"]),
     items() {
-      return this.committees;
+      return this.committees
     },
     totalItems() {
-      return this.committees.length;
+      return this.committees.length
     },
     breadcrumbs() {
       return [
@@ -69,21 +87,21 @@ export default {
         {
           title: "Committees",
         },
-      ];
+      ]
     },
   },
   beforeMount() {
-    this.loadItems();
+    this.loadItems()
   },
   methods: {
     ...mapActions(useCommitteeAdminStore, ["getAllCommittees", "selectCommittee"]),
 
     async loadItems() {
-      await this.getAllCommittees();
+      await this.getAllCommittees()
     },
     rowClick(event: Event, thing: any) {
-      this.$router.push(`/administration/committees/${thing.item.id}`);
+      this.$router.push(`/administration/committees/${thing.item.id}`)
     },
   },
-};
+}
 </script>

@@ -1,4 +1,4 @@
-import { RouteRecordRaw } from "vue-router";
+import { RouteRecordRaw } from "vue-router"
 
 const routes: RouteRecordRaw[] = [
   {
@@ -52,6 +52,6 @@ const routes: RouteRecordRaw[] = [
       requireSystemAdmin: true,
     },
   },
-];
+]
 
-export default routes;
+export default routes

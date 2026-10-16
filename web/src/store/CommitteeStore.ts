@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+import { defineStore } from "pinia"
 
-import { useApiStore } from "@/store/ApiStore";
-import { COMMITTEE_URL } from "@/urls";
+import { useApiStore } from "@/store/ApiStore"
+import { COMMITTEE_URL } from "@/urls"
 
 export const useCommitteeStore = defineStore("committee", {
   state: () => ({
@@ -11,27 +11,27 @@ export const useCommitteeStore = defineStore("committee", {
   }),
   actions: {
     async initialize() {
-      await this.loadCommittees();
+      await this.loadCommittees()
     },
 
     async loadCommittees() {
-      this.isLoading = true;
-      let api = useApiStore();
+      this.isLoading = true
+      let api = useApiStore()
       return api
         .secureCall("get", COMMITTEE_URL)
         .then((resp) => {
-          this.committees = resp.data;
-          return resp.data;
+          this.committees = resp.data
+          return resp.data
         })
         .finally(() => {
-          this.isLoading = false;
-        });
+          this.isLoading = false
+        })
     },
   },
-});
+})
 
 export interface Committee {
-  code: string;
-  name: string;
-  description?: string;
+  code: string
+  name: string
+  description?: string
 }

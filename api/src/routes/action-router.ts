@@ -1,9 +1,9 @@
-import express, { Request, Response } from "express";
-import { Knex } from "knex";
-import { isEmpty, isNil } from "lodash";
-import { DateTime } from "luxon";
+import express, { Request, Response } from "express"
+import { Knex } from "knex"
+import { isEmpty, isNil } from "lodash"
+import { DateTime } from "luxon"
 
-import { db as knex } from "../data/db-client";
+import { db as knex } from "../data/db-client"
 import {
   Action,
   ActionStatuses,
@@ -15,150 +15,132 @@ import {
   Scopes,
   SensitivityLevels,
   UserRole,
-} from "../data/models";
-import { InsertableDate } from "../utils/formatters";
-import { generateSlug } from "../utils/generateSlug";
-import { updateActionHazards, updateIncidentStatus } from "./report-router";
-import { EmailService } from "../services";
-import { ActionService } from "../services/action-service";
+} from "../data/models"
+import { InsertableDate } from "../utils/formatters"
+import { generateSlug } from "../utils/generateSlug"
+import { updateActionHazards, updateIncidentStatus } from "./report-router"
+import { EmailService } from "../services"
+import { ActionService } from "../services/action-service"
 
-const db = new ActionService();
-const emailService = new EmailService();
+const db = new ActionService()
+const emailService = new EmailService()
 
-export const actionRouter = express.Router();
+export const actionRouter = express.Router()
 
 actionRouter.get("/", async (req: Request, res: Response) => {
-  const { page, perPage, search, status, review, inspection_location_id } =
-    req.query;
+  const { page, perPage, search, status, review, inspection_location_id } = req.query
 
-  const pageNum = parseInt(page as string) || 1;
-  const perPageNum = parseInt(perPage as string) || 10;
+  const pageNum = parseInt(page as string) || 1
+  const perPageNum = parseInt(perPage as string) || 10
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin",
-    ).length > 0;
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin")
+      .length > 0
 
   const countQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search))
-      q.whereRaw(
-        `LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`,
-      );
+      q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`)
     if (!isNil(status)) {
-      const statusStr = status as string;
+      const statusStr = status as string
 
       if (statusStr == "Dashboard") {
         q.whereIn(`actions.status_code`, [
           ActionStatuses.OPEN.code,
           ActionStatuses.IN_PROGRESS.code,
-        ]);
+        ])
       } else if (statusStr.indexOf(",") > -1) {
         q.whereIn(
           `actions.status_code`,
-          statusStr.split(",").filter((s: string) => !isEmpty(s)),
-        );
+          statusStr.split(",").filter((s: string) => !isEmpty(s))
+        )
       } else {
-        q.where(`actions.status_code`, status);
+        q.where(`actions.status_code`, status)
       }
     }
-    if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`));
+    if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`))
     if (!isNil(inspection_location_id)) {
-      q.where("inspection_location_id", parseInt(`${inspection_location_id}`));
+      q.where("inspection_location_id", parseInt(`${inspection_location_id}`))
     }
 
-    if (userIsAdmin && status == "Dashboard")
-      q.where(`actions.actor_user_email`, req.user.email);
-    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email);
+    if (userIsAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email)
+    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email)
 
-    return q;
-  };
+    return q
+  }
 
   const listQuery = function (q: Knex.QueryBuilder) {
     if (!isNil(search))
-      q.whereRaw(
-        `LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`,
-      );
+      q.whereRaw(`LOWER("actions"."description") like '%${search.toString().toLowerCase()}%'`)
     if (!isNil(status)) {
-      const statusStr = status as string;
+      const statusStr = status as string
 
       if (statusStr == "Dashboard") {
         q.whereIn(`actions.status_code`, [
           ActionStatuses.OPEN.code,
           ActionStatuses.IN_PROGRESS.code,
-        ]);
+        ])
       } else if (statusStr.indexOf(",") > -1) {
         q.whereIn(
           `actions.status_code`,
-          statusStr.split(",").filter((s: string) => !isEmpty(s)),
-        );
+          statusStr.split(",").filter((s: string) => !isEmpty(s))
+        )
       } else {
-        q.where(`actions.status_code`, status);
+        q.where(`actions.status_code`, status)
       }
     }
-    if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`));
+    if (!isNil(review)) q.where("hazard_review", parseInt(`${review}`))
     if (!isNil(inspection_location_id)) {
-      q.where("inspection_location_id", parseInt(`${inspection_location_id}`));
+      q.where("inspection_location_id", parseInt(`${inspection_location_id}`))
     }
-    if (userIsAdmin && status == "Dashboard")
-      q.where(`actions.actor_user_email`, req.user.email);
-    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email);
+    if (userIsAdmin && status == "Dashboard") q.where(`actions.actor_user_email`, req.user.email)
+    else if (!userIsAdmin) q.where(`actions.actor_user_email`, req.user.email)
 
-    q.limit(perPageNum);
-    q.offset((pageNum - 1) * perPageNum);
-    return q;
-  };
+    q.limit(perPageNum)
+    q.offset((pageNum - 1) * perPageNum)
+    return q
+  }
 
-  const list = await db.getAll(
-    userIsAdmin ? "System Admin" : req.user.email,
-    listQuery,
-  );
-  const count = await db.getCount(
-    userIsAdmin ? "System Admin" : req.user.email,
-    countQuery,
-  );
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery)
+  const count = await db.getCount(userIsAdmin ? "System Admin" : req.user.email, countQuery)
 
-  const types = await knex("action_types");
-  const statuses = await knex("action_statuses");
+  const types = await knex("action_types")
+  const statuses = await knex("action_statuses")
 
   for (const item of list) {
-    item.type = types.find((t: any) => t.id === item.action_type_code);
-    item.status = statuses.find((s: any) => s.code === item.status_code);
+    item.type = types.find((t: any) => t.id === item.action_type_code)
+    item.status = statuses.find((s: any) => s.code === item.status_code)
   }
 
-  return res.json({ data: list, totalCount: count?.count });
-});
+  return res.json({ data: list, totalCount: count?.count })
+})
 
 actionRouter.get("/:slug", async (req: Request, res: Response) => {
-  const { slug } = req.params;
+  const { slug } = req.params
 
   const userIsAdmin =
-    (req.user.roles = req.user.roles || []).filter(
-      (role: UserRole) => role.name === "System Admin",
-    ).length > 0;
+    (req.user.roles = req.user.roles || []).filter((role: UserRole) => role.name === "System Admin")
+      .length > 0
 
   const listQuery = function (q: Knex.QueryBuilder) {
-    q.where("actions.slug", slug);
-    return q;
-  };
-
-  const list = await db.getAll(
-    userIsAdmin ? "System Admin" : req.user.email,
-    listQuery,
-  );
-
-  if (list && list[0]) {
-    const item = list[0];
-    const types = await knex("action_types");
-    const statuses = await knex("action_statuses");
-
-    item.type = types.find((t: any) => t.id === item.action_type_code);
-    item.status = statuses.find((s: any) => s.code === item.status_code);
-    item.categories = ((item.categories as string) ?? "").split(",");
-    return res.json({ data: item });
+    q.where("actions.slug", slug)
+    return q
   }
 
-  res.status(404).send("Action Not Found");
-});
+  const list = await db.getAll(userIsAdmin ? "System Admin" : req.user.email, listQuery)
+
+  if (list && list[0]) {
+    const item = list[0]
+    const types = await knex("action_types")
+    const statuses = await knex("action_statuses")
+
+    item.type = types.find((t: any) => t.id === item.action_type_code)
+    item.status = statuses.find((s: any) => s.code === item.status_code)
+    item.categories = ((item.categories as string) ?? "").split(",")
+    return res.json({ data: item })
+  }
+
+  res.status(404).send("Action Not Found")
+})
 
 actionRouter.post("/", async (req: Request, res: Response) => {
   const {
@@ -175,23 +157,16 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     categories,
     title,
     is_committee_task,
-  } = req.body;
+  } = req.body
 
   const incident = await knex("incidents")
-    .innerJoin(
-      "incident_types",
-      "incidents.incident_type_id",
-      "incident_types.id",
-    )
+    .innerJoin("incident_types", "incidents.incident_type_id", "incident_types.id")
     .where(`incidents.id`, incident_id)
-    .select(
-      "incidents.*",
-      "incident_types.description as incident_type_description",
-    )
-    .first();
+    .select("incidents.*", "incident_types.description as incident_type_description")
+    .first()
 
-  let hazard_id = undefined;
-  let newCategories = categories ?? [];
+  let hazard_id = undefined
+  let newCategories = categories ?? []
 
   const action = {
     incident_id,
@@ -212,26 +187,26 @@ actionRouter.post("/", async (req: Request, res: Response) => {
     categories: newCategories.join(","),
     title,
     is_committee_task: is_committee_task ?? 0,
-  } as Action;
+  } as Action
 
-  await knex("actions").insert(action);
+  await knex("actions").insert(action)
 
   if (actor_user_email) {
     await emailService.sendTaskAssignmentNotification(
       { fullName: actor_display_name, email: actor_user_email },
       action,
-      incident,
-    );
+      incident
+    )
   }
 
   return res.json({
     data: {},
     messages: [{ variant: "success", text: "Task Saved" }],
-  });
-});
+  })
+})
 
 actionRouter.put("/:slug", async (req: Request, res: Response) => {
-  const { slug } = req.params;
+  const { slug } = req.params
   const {
     notes,
     actor_user_email,
@@ -245,21 +220,17 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
     committee_supervisor_response,
     committee_task_rationale,
     comments,
-  } = req.body;
-  let { actor_user_id } = req.body;
+  } = req.body
+  let { actor_user_id } = req.body
 
-  const action = await knex("actions").where({ slug }).first();
-  if (!action) return res.status(404).send();
+  const action = await knex("actions").where({ slug }).first()
+  if (!action) return res.status(404).send()
 
-  const incident = await knex("incidents")
-    .where({ id: action.incident_id })
-    .first();
+  const incident = await knex("incidents").where({ id: action.incident_id }).first()
 
   if (incident && !isEmpty(actor_user_email)) {
-    const actorUser = await knex("users")
-      .where("email", actor_user_email)
-      .first();
-    if (actorUser) actor_user_id = actorUser.id;
+    const actorUser = await knex("users").where("email", actor_user_email).first()
+    if (actorUser) actor_user_id = actorUser.id
 
     if (action.actor_user_email != actor_user_email) {
       await emailService.sendTaskAssignmentNotification(
@@ -268,12 +239,12 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
           email: actor_user_email,
         },
         action,
-        incident,
-      );
+        incident
+      )
     }
   }
 
-  let newCategories = categories ?? [];
+  let newCategories = categories ?? []
 
   await knex("actions")
     .where({ slug })
@@ -290,26 +261,26 @@ actionRouter.put("/:slug", async (req: Request, res: Response) => {
       committee_supervisor_response,
       committee_task_rationale,
       comments,
-    });
+    })
 
-  await updateActionHazards(action, status_code, urgency_code, control);
-  await updateIncidentStatus(action, req.user);
+  await updateActionHazards(action, status_code, urgency_code, control)
+  await updateIncidentStatus(action, req.user)
 
-  return res.json({ data: {} });
-});
+  return res.json({ data: {} })
+})
 
 actionRouter.delete("/:slug", async (req: Request, res: Response) => {
-  const { slug } = req.params;
-  await knex("actions").where({ slug }).delete();
-  return res.json({ data: {} });
-});
+  const { slug } = req.params
+  await knex("actions").where({ slug }).delete()
+  return res.json({ data: {} })
+})
 
 actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
-  const { slug, operation } = req.params;
-  const { control, notes, hazard_review } = req.body;
+  const { slug, operation } = req.params
+  const { control, notes, hazard_review } = req.body
 
-  const action = await knex("actions").where({ slug }).first();
-  if (!action) return res.status(404).send();
+  const action = await knex("actions").where({ slug }).first()
+  if (!action) return res.status(404).send()
 
   if (operation == "complete") {
     await knex("actions")
@@ -321,36 +292,24 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
         status_code: ActionStatuses.COMPLETE.code,
         control,
         notes,
-      });
+      })
 
-    await updateActionHazards(
-      action,
-      ActionStatuses.COMPLETE.code,
-      action.urgency_code,
-      control,
-    );
-    await updateIncidentStatus(action, req.user);
+    await updateActionHazards(action, ActionStatuses.COMPLETE.code, action.urgency_code, control)
+    await updateIncidentStatus(action, req.user)
   } else if (operation == "revert") {
     await knex("actions").where({ slug }).update({
       complete_date: null,
       complete_name: null,
       complete_user_id: null,
       status_code: ActionStatuses.IN_PROGRESS.code,
-    });
+    })
 
-    await updateActionHazards(
-      action,
-      ActionStatuses.OPEN.code,
-      action.urgency_code,
-      null,
-    );
-    await updateIncidentStatus(action, req.user);
+    await updateActionHazards(action, ActionStatuses.OPEN.code, action.urgency_code, null)
+    await updateIncidentStatus(action, req.user)
   } else if (operation == "hazard") {
-    let hazard_id = null;
+    let hazard_id = null
     if (hazard_review == 1) {
-      const incident = await knex("incidents")
-        .where({ id: action.incident_id })
-        .first();
+      const incident = await knex("incidents").where({ id: action.incident_id }).first()
 
       const hazard = {
         hazard_type_id: 1,
@@ -367,21 +326,19 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
         reported_at: incident.reported_at,
         urgency_code: "Low",
         categories: action.categories,
-      } as Hazard;
+      } as Hazard
 
-      const insertedHazards = await knex("hazards")
-        .insert(hazard)
-        .returning("*");
-      hazard_id = insertedHazards[0].id;
+      const insertedHazards = await knex("hazards").insert(hazard).returning("*")
+      hazard_id = insertedHazards[0].id
 
       const link = {
         hazard_id: hazard_id,
         incident_id: incident.id,
         priority_order: 1,
         incident_hazard_type_code: IncidentHazardTypes.CONTRIBUTING_FACTOR.code,
-      } as IncidentHazard;
+      } as IncidentHazard
 
-      await knex("incident_hazards").insert(link);
+      await knex("incident_hazards").insert(link)
     }
 
     await knex("actions").where({ slug }).update({
@@ -392,8 +349,8 @@ actionRouter.put("/:slug/:operation", async (req: Request, res: Response) => {
       control: null,
       hazard_review,
       hazard_id,
-    });
+    })
   }
 
-  return res.json({ data: {} });
-});
+  return res.json({ data: {} })
+})

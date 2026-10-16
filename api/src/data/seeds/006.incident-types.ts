@@ -1,8 +1,8 @@
-import knex from "knex";
-import { Department, IncidentType } from "../models";
+import knex from "knex"
+import { Department, IncidentType } from "../models"
 
 export async function seed(knex: knex.Knex) {
-  const locations = await knex<IncidentType>("incident_types");
+  const locations = await knex<IncidentType>("incident_types")
 
   const toInsert = [
     { name: "incident", description: "Incident" },
@@ -11,11 +11,11 @@ export async function seed(knex: knex.Knex) {
     { name: "refusal", description: "Work Refusal" },
     { name: "dontknow", description: "Uncategoried" },
     { name: "inspection", description: "Inspection" },
-  ] as Array<IncidentType>;
+  ] as Array<IncidentType>
 
   for (const item of toInsert) {
-    if (locations.find((d) => d.name == item.name)) continue;
+    if (locations.find((d) => d.name == item.name)) continue
 
-    await knex("incident_types").insert(item);
+    await knex("incident_types").insert(item)
   }
 }

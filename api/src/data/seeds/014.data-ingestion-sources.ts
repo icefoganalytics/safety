@@ -1,10 +1,10 @@
-import knex from "knex";
-import { DataIngestionSource } from "@/data/models";
+import knex from "knex"
+import { DataIngestionSource } from "@/data/models"
 
 export async function seed(knex: knex.Knex) {
-  const data_ingestion_sources = await knex<DataIngestionSource>("data_ingestion_sources");
+  const data_ingestion_sources = await knex<DataIngestionSource>("data_ingestion_sources")
 
-  const dataIngestionSourcesAttributes: DataIngestionSource[]  = [
+  const dataIngestionSourcesAttributes: DataIngestionSource[] = [
     {
       source_name: "RL6",
       description: "HSS's incident system",
@@ -25,17 +25,19 @@ export async function seed(knex: knex.Knex) {
       column_count: 32,
       source_attribute_to_transform: "Incident Date",
     },
-  ] as Array<DataIngestionSource>;
+  ] as Array<DataIngestionSource>
 
   for (const dataIngestionSourcesAttribute of dataIngestionSourcesAttributes) {
     const existing = await knex("data_ingestion_sources")
       .where({ source_name: dataIngestionSourcesAttribute.source_name })
-      .first();
+      .first()
 
     if (existing) {
-      await knex("data_ingestion_sources").where({ source_name: dataIngestionSourcesAttribute.source_name }).update(dataIngestionSourcesAttribute);
+      await knex("data_ingestion_sources")
+        .where({ source_name: dataIngestionSourcesAttribute.source_name })
+        .update(dataIngestionSourcesAttribute)
     } else {
-      await knex("data_ingestion_sources").insert(dataIngestionSourcesAttribute);
+      await knex("data_ingestion_sources").insert(dataIngestionSourcesAttribute)
     }
   }
 }

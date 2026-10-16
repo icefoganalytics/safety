@@ -1,45 +1,45 @@
-import express, { Request, Response } from "express";
-import { db as knex } from "../data/db-client";
-import { isEmpty } from "lodash";
-import { UserRole } from "../data/models";
-import { RequireAdmin } from "../middleware";
-import { InsertableDate } from "../utils/formatters";
-import { DateTime } from "luxon";
+import express, { Request, Response } from "express"
+import { db as knex } from "../data/db-client"
+import { isEmpty } from "lodash"
+import { UserRole } from "../data/models"
+import { RequireAdmin } from "../middleware"
+import { InsertableDate } from "../utils/formatters"
+import { DateTime } from "luxon"
 
-export const roleRouter = express.Router();
+export const roleRouter = express.Router()
 
 roleRouter.get("/", async (req: Request, res: Response) => {
-  const list = await knex("role_types");
-  return res.json({ data: list });
-});
+  const list = await knex("role_types")
+  return res.json({ data: list })
+})
 
 roleRouter.post("/user/:user_id", RequireAdmin, async (req: Request, res: Response) => {
-  const { user_id } = req.params;
-  const { roles } = req.body;
+  const { user_id } = req.params
+  const { roles } = req.body
 
   knex
     .transaction(async (trx) => {
       await trx("user_roles")
         .where({ user_id: parseInt(`${user_id}`) })
-        .delete();
+        .delete()
 
       for (const role of roles) {
-        role.create_user_id = req.user.id;
-        role.start_date = InsertableDate(role.start_date);
-        role.end_date = InsertableDate(role.end_date);
-        role.created_at = InsertableDate(DateTime.utc().toISO());
+        role.create_user_id = req.user.id
+        role.start_date = InsertableDate(role.start_date)
+        role.end_date = InsertableDate(role.end_date)
+        role.created_at = InsertableDate(DateTime.utc().toISO())
 
-        if (isEmpty(role.department_code)) role.department_code = null;
-        await trx("user_roles").insert(roleForInsert(role));
+        if (isEmpty(role.department_code)) role.department_code = null
+        await trx("user_roles").insert(roleForInsert(role))
       }
     })
     .catch((err) => {
-      console.log("ERROR IN ROLES", err);
-      return res.status(500).send();
-    });
+      console.log("ERROR IN ROLES", err)
+      return res.status(500).send()
+    })
 
-  res.json({}).send();
-});
+  res.json({}).send()
+})
 
 function roleForInsert(input: any): UserRole {
   return {
@@ -51,5 +51,5 @@ function roleForInsert(input: any): UserRole {
     create_user_id: input.create_user_id,
     start_date: input.start_date,
     end_date: input.end_date,
-  };
+  }
 }

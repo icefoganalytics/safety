@@ -1,15 +1,19 @@
 <template>
-  <v-select :items="departments" item-title="code" item-value="code"></v-select>
+  <v-select
+    :items="departments"
+    item-title="code"
+    item-value="code"
+  ></v-select>
 </template>
 
 <script setup lang="ts">
-import { useDepartmentStore } from "@/store/DepartmentStore";
-import { storeToRefs } from "pinia";
+import { useDepartmentStore } from "@/store/DepartmentStore"
+import { storeToRefs } from "pinia"
 
-const store = useDepartmentStore();
-const { loadDepartments } = store;
+const store = useDepartmentStore()
+const { loadDepartments } = store
 
-loadDepartments();
+loadDepartments()
 
-const { departments } = storeToRefs(store);
+const { departments } = storeToRefs(store)
 </script>

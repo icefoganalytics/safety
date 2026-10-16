@@ -64,73 +64,73 @@
 </template>
 
 <script setup lang="ts">
-import { storeToRefs } from "pinia";
-import { computed, onMounted, ref } from "vue";
+import { storeToRefs } from "pinia"
+import { computed, onMounted, ref } from "vue"
 
-import { useUserStore } from "@/store/UserStore";
-import { useDataIngestionSourceAdminStore } from "../store";
-import { useNotificationStore } from "@/store/NotificationStore";
+import { useUserStore } from "@/store/UserStore"
+import { useDataIngestionSourceAdminStore } from "../store"
+import { useNotificationStore } from "@/store/NotificationStore"
 
-const props = defineProps<{ modelValue: boolean }>();
-const emit = defineEmits<{ "update:modelValue": [boolean] }>();
+const props = defineProps<{ modelValue: boolean }>()
+const emit = defineEmits<{ "update:modelValue": [boolean] }>()
 
-const isLoading = ref(false);
+const isLoading = ref(false)
 
-const userStore = useUserStore();
-const dataIngestionStore = useDataIngestionSourceAdminStore();
-const notificationStore = useNotificationStore();
+const userStore = useUserStore()
+const dataIngestionStore = useDataIngestionSourceAdminStore()
+const notificationStore = useNotificationStore()
 
-const { user } = storeToRefs(userStore);
+const { user } = storeToRefs(userStore)
 const { dataIngestionSources, selectedDataIngestionSourceId, selectedDataIngestionFile } =
-  storeToRefs(dataIngestionStore);
+  storeToRefs(dataIngestionStore)
 
 const modelValue = computed<boolean>({
   get: () => props.modelValue,
   set: (modelValue) => emit("update:modelValue", modelValue),
-});
+})
 
 const selectedId = computed<number | undefined>({
   get: () => selectedDataIngestionSourceId.value,
   set: (source_id) => {
     if (source_id != null) {
-      dataIngestionStore.selectDataIngestionSourceId(source_id);
+      dataIngestionStore.selectDataIngestionSourceId(source_id)
     }
   },
-});
+})
 
 const selectedFile = computed<File | undefined>({
   get: () => selectedDataIngestionFile.value,
   set: (f) => {
-    if (f) dataIngestionStore.selectDataIngestionFile(f);
-    else dataIngestionStore.unselectDataIngestionFile();
+    if (f) dataIngestionStore.selectDataIngestionFile(f)
+    else dataIngestionStore.unselectDataIngestionFile()
   },
-});
+})
 
 onMounted(() => {
-  dataIngestionStore.getAllDataIngestionSources();
-});
+  dataIngestionStore.getAllDataIngestionSources()
+})
 
 function resetAndClose() {
-  dataIngestionStore.unselectDataIngestionSourceId();
-  dataIngestionStore.unselectDataIngestionFile();
-  modelValue.value = false;
+  dataIngestionStore.unselectDataIngestionSourceId()
+  dataIngestionStore.unselectDataIngestionFile()
+  modelValue.value = false
 }
 
 async function handleSave() {
-  if (isLoading.value) return;
-  isLoading.value = true;
+  if (isLoading.value) return
+  isLoading.value = true
   try {
-    await userStore.loadCurrentUser();
-    const userId = user.value?.id;
-    await dataIngestionStore.addDataIngestion(userId);
+    await userStore.loadCurrentUser()
+    const userId = user.value?.id
+    await dataIngestionStore.addDataIngestion(userId)
   } catch (error: any) {
-    console.error("save failed: ${error}", error);
+    console.error("save failed: ${error}", error)
     notificationStore.notify({
       text: error.message || "Upload failed. Please try again.",
       variant: "error",
-    });
+    })
   } finally {
-    isLoading.value = false;
+    isLoading.value = false
   }
 }
 </script>

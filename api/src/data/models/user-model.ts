@@ -1,47 +1,47 @@
-import { UserRole } from "./user-role-model";
+import { UserRole } from "./user-role-model"
 
 export interface User {
-  id: number;
-  email: string;
-  auth_subject: string;
-  first_name: string;
-  last_name: string;
-  display_name: string;
-  title: string;
-  department: string;
-  division: string;
-  branch: string;
-  unit: string;
-  is_active: boolean | string | number;
+  id: number
+  email: string
+  auth_subject: string
+  first_name: string
+  last_name: string
+  display_name: string
+  title: string
+  department: string
+  division: string
+  branch: string
+  unit: string
+  is_active: boolean | string | number
 
-  roles?: UserRole[];
+  roles?: UserRole[]
 }
 
 export interface User_Create {
-  email: string;
-  auth_subject: string;
-  first_name: string;
-  last_name: string;
-  display_name: string;
-  title: string;
-  department: string;
-  division: string;
-  branch: string;
-  unit: string;
-  is_active: boolean | string | number;
+  email: string
+  auth_subject: string
+  first_name: string
+  last_name: string
+  display_name: string
+  title: string
+  department: string
+  division: string
+  branch: string
+  unit: string
+  is_active: boolean | string | number
 }
 
 export interface User_Update {
-  auth_subject: string;
-  first_name: string;
-  last_name: string;
-  display_name: string;
-  title: string;
-  department: string;
-  division: string;
-  branch: string;
-  unit: string;
-  is_active: boolean | string | number;
+  auth_subject: string
+  first_name: string
+  last_name: string
+  display_name: string
+  title: string
+  department: string
+  division: string
+  branch: string
+  unit: string
+  is_active: boolean | string | number
 }
 
 /* export class UserHelper {

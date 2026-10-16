@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+import { defineStore } from "pinia"
 
-import { useApiStore } from "@/store/ApiStore";
-import { DEPARTMENT_URL } from "@/urls";
+import { useApiStore } from "@/store/ApiStore"
+import { DEPARTMENT_URL } from "@/urls"
 
 export const useDepartmentStore = defineStore("department", {
   state: () => ({
@@ -10,27 +10,27 @@ export const useDepartmentStore = defineStore("department", {
   }),
   actions: {
     async initialize() {
-      await this.loadDepartments();
+      await this.loadDepartments()
     },
 
     async loadDepartments() {
-      this.isLoading = true;
-      let api = useApiStore();
+      this.isLoading = true
+      let api = useApiStore()
       return api
         .secureCall("get", DEPARTMENT_URL)
         .then((resp) => {
-          this.departments = resp.data;
-          return resp.data;
+          this.departments = resp.data
+          return resp.data
         })
         .finally(() => {
-          this.isLoading = false;
-        });
+          this.isLoading = false
+        })
     },
   },
-});
+})
 
 export interface Department {
-  code: string;
-  name: string;
-  description?: string;
+  code: string
+  name: string
+  description?: string
 }

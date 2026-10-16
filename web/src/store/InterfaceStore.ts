@@ -1,31 +1,31 @@
-import { ref } from "vue";
-import { defineStore } from "pinia";
+import { ref } from "vue"
+import { defineStore } from "pinia"
 
 export const useInterfaceStore = defineStore("interface", () => {
-  const showApplicationOverlay = ref(true);
-  const isOffline = ref(false);
-  const overlayMessage = ref("");
+  const showApplicationOverlay = ref(true)
+  const isOffline = ref(false)
+  const overlayMessage = ref("")
 
   window.addEventListener("offline", function (e) {
-    console.log("offline");
-    isOffline.value = true;
-  });
+    console.log("offline")
+    isOffline.value = true
+  })
 
   window.addEventListener("online", function (e) {
-    console.log("online");
-    isOffline.value = false;
-  });
+    console.log("online")
+    isOffline.value = false
+  })
 
   function showOverlay(message?: string) {
-    console.log("SHOW OVER");
-    overlayMessage.value = message ?? "";
-    showApplicationOverlay.value = true;
+    console.log("SHOW OVER")
+    overlayMessage.value = message ?? ""
+    showApplicationOverlay.value = true
   }
 
   function hideOverlay() {
-    console.log("HIDE OVER");
-    showApplicationOverlay.value = false;
+    console.log("HIDE OVER")
+    showApplicationOverlay.value = false
   }
 
-  return { showApplicationOverlay, isOffline, showOverlay, hideOverlay, overlayMessage };
-});
+  return { showApplicationOverlay, isOffline, showOverlay, hideOverlay, overlayMessage }
+})

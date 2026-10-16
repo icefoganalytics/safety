@@ -1,0 +1,4 @@
+{
+  "eslint.workingDirectories": ["./api", "./web"],
+  "eslint.validate": ["javascript", "typescript", "vue"]
+}

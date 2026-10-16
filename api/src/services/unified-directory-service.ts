@@ -1,37 +1,34 @@
-import { DirectoryService } from "./directory-service";
-import { YESNETService } from "./yesnet-service";
+import { DirectoryService } from "./directory-service"
+import { YESNETService } from "./yesnet-service"
 
 export interface DirectorySearchResult {
-  display_name: string;
-  first_name: string;
-  last_name: string;
-  ynet_id: string;
-  email: string;
-  long_name: string;
-  title: string;
-  department: string;
-  officeLocation: string;
-  userPrincipalName: string;
-  user_id?: number;
+  display_name: string
+  first_name: string
+  last_name: string
+  ynet_id: string
+  email: string
+  long_name: string
+  title: string
+  department: string
+  officeLocation: string
+  userPrincipalName: string
+  user_id?: number
 }
 
 export class UnifiedDirectoryService {
-  private directoryService: DirectoryService;
-  private yesnetService: YESNETService;
+  private directoryService: DirectoryService
+  private yesnetService: YESNETService
 
   constructor() {
-    this.directoryService = new DirectoryService();
-    this.yesnetService = new YESNETService();
+    this.directoryService = new DirectoryService()
+    this.yesnetService = new YESNETService()
   }
 
   /**
    * Connects to both directory services in parallel
    */
   async connect(): Promise<void> {
-    await Promise.all([
-      this.directoryService.connect(),
-      this.yesnetService.connect(),
-    ]);
+    await Promise.all([this.directoryService.connect(), this.yesnetService.connect()])
   }
 
   /**
@@ -40,14 +37,14 @@ export class UnifiedDirectoryService {
    * @returns Combined array of results from both services
    */
   async search(terms: string): Promise<DirectorySearchResult[]> {
-    await this.connect();
+    await this.connect()
 
     const [directoryResults, yesnetResults] = await Promise.all([
       this.directoryService.search(terms),
       this.yesnetService.search(terms),
-    ]);
+    ])
 
-    return [...directoryResults, ...yesnetResults];
+    return [...directoryResults, ...yesnetResults]
   }
 
   /**
@@ -56,34 +53,34 @@ export class UnifiedDirectoryService {
    * @returns Combined array of results from both services
    */
   async searchByEmail(email: string): Promise<DirectorySearchResult[]> {
-    await this.connect();
+    await this.connect()
 
     const [directoryResults, yesnetResults] = await Promise.all([
       this.directoryService.searchByEmail(email),
       this.yesnetService.searchByEmail(email),
-    ]);
+    ])
 
-    const emailResults = [...directoryResults, ...yesnetResults];
-    return emailResults;
+    const emailResults = [...directoryResults, ...yesnetResults]
+    return emailResults
 
-    if (emailResults.length > 0) return emailResults;
+    if (emailResults.length > 0) return emailResults
 
     const [directorySearchResults, yesnetSearchResults] = await Promise.all([
       this.directoryService.search(email),
       this.yesnetService.search(email),
-    ]);
+    ])
 
-    return [...directorySearchResults, ...yesnetSearchResults];
+    return [...directorySearchResults, ...yesnetSearchResults]
   }
 
   /**
    * Get individual service instances if needed for specific operations
    */
   getDirectoryService(): DirectoryService {
-    return this.directoryService;
+    return this.directoryService
   }
 
   getYESNETService(): YESNETService {
-    return this.yesnetService;
+    return this.yesnetService
   }
 }

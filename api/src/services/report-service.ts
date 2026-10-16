@@ -1,20 +1,20 @@
-import { Report } from "../data/models";
-import { db } from "../data/db-client";
+import { Report } from "../data/models"
+import { db } from "../data/db-client"
 
 export class ReportService {
   async getAll(): Promise<Report[]> {
-    return db.from("reports");
+    return db.from("reports")
   }
 
   async getByEmail(email: string): Promise<Report[]> {
-    return db<Report>("reports").where({ email });
+    return db<Report>("reports").where({ email })
   }
 
   async create(item: any): Promise<any> {
-    return db("reports").insert(item);
+    return db("reports").insert(item)
   }
 
   async update(id: number, item: any): Promise<Report> {
-    return db("reports").where({ id }).update(item);
+    return db("reports").where({ id }).update(item)
   }
 }

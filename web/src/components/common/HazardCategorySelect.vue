@@ -9,5 +9,5 @@ const categoryOptions = [
   { title: "Ergonomic", value: "Ergonomic" },
   { title: "Physical Conditions", value: "Physical Conditions" },
   { title: "Safety", value: "Safety" },
-];
+]
 </script>

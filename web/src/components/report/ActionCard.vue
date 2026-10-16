@@ -1,7 +1,12 @@
 <template>
   <v-card class="default mb-5">
     <v-card-text>
-      <v-btn to="/actions" class="my-0 float-right text-subtitle-2" color="primary" size="small" variant="text"
+      <v-btn
+        to="/actions"
+        class="my-0 float-right text-subtitle-2"
+        color="primary"
+        size="small"
+        variant="text"
         >All Actions</v-btn
       >
       <h4 class="text-h5">My Open Actions</h4>
@@ -12,17 +17,32 @@
         bg-color="#fff"
         class="py-0 limit-card-height-400"
         style="border: 1px #aaa solid"
-        rounded>
+        rounded
+      >
         <div v-for="(action, idx) of actions">
           <v-list-item
             :title="makeTitle(action)"
             :subtitle="makeSubtitle(action)"
             class="pt-1 pb-2"
-            @click="openActionClick(action)">
+            @click="openActionClick(action)"
+          >
             <template #prepend>
-              <v-avatar size="small" class="mx-n2">
-                <v-icon v-if="action.status_code == 'Open'" color="warning" size="26">mdi-alert-circle-outline</v-icon>
-                <v-icon v-else color="green" size="26">mdi-circle-outline</v-icon>
+              <v-avatar
+                size="small"
+                class="mx-n2"
+              >
+                <v-icon
+                  v-if="action.status_code == 'Open'"
+                  color="warning"
+                  size="26"
+                  >mdi-alert-circle-outline</v-icon
+                >
+                <v-icon
+                  v-else
+                  color="green"
+                  size="26"
+                  >mdi-circle-outline</v-icon
+                >
               </v-avatar>
             </template>
           </v-list-item>
@@ -40,33 +60,40 @@
 </template>
 
 <script lang="ts" setup>
-import { DateTime } from "luxon";
-import { storeToRefs } from "pinia";
-import { useRouter } from "vue-router";
+import { DateTime } from "luxon"
+import { storeToRefs } from "pinia"
+import { useRouter } from "vue-router"
 
-import { Action, useActionStore } from "@/store/ActionStore";
+import { Action, useActionStore } from "@/store/ActionStore"
 
-const router = useRouter();
+const router = useRouter()
 
-const actionStore = useActionStore();
-const { loadActions } = actionStore;
-const { actions } = storeToRefs(actionStore);
+const actionStore = useActionStore()
+const { loadActions } = actionStore
+const { actions } = storeToRefs(actionStore)
 
-loadActions({ page: 1, perPage: 15, search: null, review: null, status: "Dashboard", inspection_location_id: null });
+loadActions({
+  page: 1,
+  perPage: 15,
+  search: null,
+  review: null,
+  status: "Dashboard",
+  inspection_location_id: null,
+})
 
 function makeTitle(input: Action) {
-  return `${input.incident_identifier ? input.incident_identifier + " : " : ""}${input.description}`;
+  return `${input.incident_identifier ? input.incident_identifier + " : " : ""}${input.description}`
 }
 
 function makeSubtitle(input: Action) {
-  return `Created: ${DateTime.fromISO(input.created_at?.toString()).toRelative()}, Status: ${input.status_code}`;
+  return `Created: ${DateTime.fromISO(input.created_at?.toString()).toRelative()}, Status: ${input.status_code}`
 }
 
 function openActionClick(input: Action) {
   if (input.incident_type_id == 6) {
-    router.push(`/inspections/${input.incident_slug}?action=${input.slug}`);
-    return;
+    router.push(`/inspections/${input.incident_slug}?action=${input.slug}`)
+    return
   }
-  router.push(`/reports/${input.incident_slug}?action=${input.slug}`);
+  router.push(`/reports/${input.incident_slug}?action=${input.slug}`)
 }
 </script>

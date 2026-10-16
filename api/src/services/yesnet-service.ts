@@ -1,153 +1,122 @@
-import axios from "axios";
-import moment from "moment";
-import { isNaN, isNil, isNumber } from "lodash";
+import axios from "axios"
+import moment from "moment"
+import { isNaN, isNil, isNumber } from "lodash"
 
-import {
-  YESNET_CLIENT_ID,
-  YESNET_CLIENT_SECRET,
-  YESNET_TENANT_ID,
-} from "@/config";
-import { AzureADUserGetResponse } from "./directory-service";
+import { YESNET_CLIENT_ID, YESNET_CLIENT_SECRET, YESNET_TENANT_ID } from "@/config"
+import { AzureADUserGetResponse } from "./directory-service"
 
-const AD_SCOPE = "https://graph.microsoft.com/.default";
+const AD_SCOPE = "https://graph.microsoft.com/.default"
 
 export class YESNETService {
-  connected = false;
-  token = "";
-  authHeader = {};
-  validUntil = moment();
+  connected = false
+  token = ""
+  authHeader = {}
+  validUntil = moment()
 
   constructor() {}
 
   async connect(): Promise<any> {
-    if (this.connected) return;
+    if (this.connected) return
 
-    let body = `client_id=${YESNET_CLIENT_ID}&scope=${AD_SCOPE}&client_secret=${YESNET_CLIENT_SECRET}&grant_type=client_credentials`;
+    let body = `client_id=${YESNET_CLIENT_ID}&scope=${AD_SCOPE}&client_secret=${YESNET_CLIENT_SECRET}&grant_type=client_credentials`
 
     return axios
-      .post(
-        `https://login.microsoftonline.com/${YESNET_TENANT_ID}/oauth2/v2.0/token`,
-        body,
-        {
-          headers: { "Content-type": "application/x-www-form-urlencoded" },
-        },
-      )
+      .post(`https://login.microsoftonline.com/${YESNET_TENANT_ID}/oauth2/v2.0/token`, body, {
+        headers: { "Content-type": "application/x-www-form-urlencoded" },
+      })
       .then((resp) => {
-        this.token = resp.data.access_token;
+        this.token = resp.data.access_token
         this.authHeader = {
           Authorization: `Bearer ${this.token}`,
           ConsistencyLevel: "eventual",
-        };
-        this.connected = true;
-        this.validUntil = moment().add(resp.data.expires_in, "seconds");
+        }
+        this.connected = true
+        this.validUntil = moment().add(resp.data.expires_in, "seconds")
       })
       .catch((error) => {
-        console.error("YESNET GRAPH ERROR: ", error);
-      });
+        console.error("YESNET GRAPH ERROR: ", error)
+      })
   }
 
   async search(terms: string): Promise<any> {
     if (terms && terms.length > 3) {
       if (moment().isAfter(this.validUntil)) {
-        this.connected = false;
-        await this.connect();
+        this.connected = false
+        await this.connect()
 
-        if (!this.connected) return [];
+        if (!this.connected) return []
       }
 
-      let pieces = terms.replace(".", " ").replace("&", " ").split(" ");
-      let queryStmts = new Array<string>();
+      let pieces = terms.replace(".", " ").replace("&", " ").split(" ")
+      let queryStmts = new Array<string>()
 
       for (let piece of pieces) {
-        piece = piece.trim();
+        piece = piece.trim()
 
-        if (piece == "") continue;
+        if (piece == "") continue
 
-        piece = piece.replace(/'/g, "''");
+        piece = piece.replace(/'/g, "''")
 
         queryStmts.push(
-          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`,
-        );
+          `(startsWith(givenName,'${piece}') or startsWith(surname,'${piece}') or startsWith(userprincipalname,'${piece}') or startsWith(jobTitle, '${piece}') or startsWith(mail, '${piece}') )`
+        )
       }
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType,accountEnabled";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,otherMails,creationType,accountEnabled"
 
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND ",
+            " AND "
           )} ${selectStmt}`,
-          { headers: this.authHeader },
+          { headers: this.authHeader }
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
-            let list = new Array<any>();
+            let list = new Array<any>()
 
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
-              if (
-                dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")
-              )
-                continue;
-              if (
-                dir.userPrincipalName
-                  .toLowerCase()
-                  .endsWith("-susp@ynet.gov.yk.ca")
-              )
-                continue;
-              if (dir.userPrincipalName.toLowerCase().startsWith("admin"))
-                continue;
-              if ((dir.jobTitle || "").toLowerCase() == "yg contractor")
-                continue;
-              if (isNil(dir.mail)) continue;
+              if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue
+              if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue
+              if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue
+              if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue
+              if (isNil(dir.mail)) continue
 
-              if (
-                dir.userPrincipalName
-                  .toLowerCase()
-                  .endsWith("yukongovernment.onmicrosoft.com")
-              ) {
+              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
-                    dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca"),
-                    ) ?? dir.mail;
+                    dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca",
-                  );
-                } else continue;
+                    "@YNet.gov.yk.ca"
+                  )
+                } else continue
               }
 
-              if (
-                dir.mail
-                  .toLowerCase()
-                  .endsWith("yukongovernment.onmicrosoft.com")
-              )
-                continue;
+              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue
 
-              if (!dir.accountEnabled) continue;
-              if (dir.jobTitle == "Student") continue;
+              if (!dir.accountEnabled) continue
+              if (dir.jobTitle == "Student") continue
 
-              const yesnet_id = dir.userPrincipalName
-                .toLowerCase()
-                .replace("@yesnet.yk.ca", "");
+              const yesnet_id = dir.userPrincipalName.toLowerCase().replace("@yesnet.yk.ca", "")
 
-              if (!isNaN(Number(yesnet_id))) continue;
+              if (!isNaN(Number(yesnet_id))) continue
 
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName.toLowerCase()})`;
-              let title = "Unknown title";
+              } (${dir.userPrincipalName.toLowerCase()})`
+              let title = "Unknown title"
 
               if (dir.department) {
-                long_name += ` ${dir.department}`;
-              } else dir.department = "Unknown department";
+                long_name += ` ${dir.department}`
+              } else dir.department = "Unknown department"
 
               if (dir.jobTitle) {
-                long_name += ` :  ${dir.jobTitle}`;
-                title = dir.jobTitle;
+                long_name += ` :  ${dir.jobTitle}`
+                title = dir.jobTitle
               }
 
               list.push({
@@ -161,114 +130,91 @@ export class YESNETService {
                 department: dir.department,
                 officeLocation: dir.officeLocation,
                 userPrincipalName: dir.userPrincipalName.toLowerCase(),
-              });
+              })
             }
 
-            return list;
+            return list
           }
         })
         .catch((error) => {
-          console.log("GRAPH ERROR", error);
-          return [];
-        });
+          console.log("GRAPH ERROR", error)
+          return []
+        })
     }
 
-    return [];
+    return []
   }
 
   async searchByEmail(terms: string): Promise<any> {
     if (terms && terms.length > 3) {
       if (moment().isAfter(this.validUntil)) {
-        this.connected = false;
-        await this.connect();
+        this.connected = false
+        await this.connect()
 
-        if (!this.connected) return [];
+        if (!this.connected) return []
       }
 
-      let queryStmts = new Array<string>();
+      let queryStmts = new Array<string>()
 
-      terms = terms.replace(/'/g, "''");
+      terms = terms.replace(/'/g, "''")
 
-      queryStmts.push(`( startsWith(mail,'${terms}') )`);
+      queryStmts.push(`( startsWith(mail,'${terms}') )`)
 
       const selectStmt =
-        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,accountEnabled";
+        "&$select=surname,givenName,department,userPrincipalName,mail,jobTitle,officeLocation,division,manager,accountEnabled"
 
       return axios
         .get<AzureADUserGetResponse>(
           `https://graph.microsoft.com/v1.0/users?$count=true&$filter=${queryStmts.join(
-            " AND ",
+            " AND "
           )} ${selectStmt}`,
-          { headers: this.authHeader },
+          { headers: this.authHeader }
         )
         .then((resp) => {
           if (resp.data && resp.data.value) {
-            let list = new Array<any>();
+            let list = new Array<any>()
 
             for (let dir of resp.data.value) {
               // get rid of results for external people like contractors
-              if (
-                dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")
-              )
-                continue;
-              if (
-                dir.userPrincipalName
-                  .toLowerCase()
-                  .endsWith("-susp@ynet.gov.yk.ca")
-              )
-                continue;
-              if (dir.userPrincipalName.toLowerCase().startsWith("admin"))
-                continue;
-              if ((dir.jobTitle || "").toLowerCase() == "yg contractor")
-                continue;
-              if (isNil(dir.mail)) continue;
+              if (dir.userPrincipalName.toLowerCase().endsWith("xnet.gov.yk.ca")) continue
+              if (dir.userPrincipalName.toLowerCase().endsWith("-susp@ynet.gov.yk.ca")) continue
+              if (dir.userPrincipalName.toLowerCase().startsWith("admin")) continue
+              if ((dir.jobTitle || "").toLowerCase() == "yg contractor") continue
+              if (isNil(dir.mail)) continue
 
-              if (
-                dir.userPrincipalName
-                  .toLowerCase()
-                  .endsWith("yukongovernment.onmicrosoft.com")
-              ) {
+              if (dir.userPrincipalName.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) {
                 if (dir.otherMails && dir.otherMails.length > 0) {
                   dir.mail =
-                    dir.otherMails.find((m) =>
-                      m.toLowerCase().endsWith("@wcb.yk.ca"),
-                    ) ?? dir.mail;
+                    dir.otherMails.find((m) => m.toLowerCase().endsWith("@wcb.yk.ca")) ?? dir.mail
 
                   dir.userPrincipalName = dir.userPrincipalName.replace(
                     "_wcbyukon.ca#EXT#@YukonGovernment.onmicrosoft.com",
-                    "@YNet.gov.yk.ca",
-                  );
-                } else continue;
+                    "@YNet.gov.yk.ca"
+                  )
+                } else continue
               }
 
-              if (
-                dir.mail
-                  .toLowerCase()
-                  .endsWith("yukongovernment.onmicrosoft.com")
-              )
-                continue;
+              if (dir.mail.toLowerCase().endsWith("yukongovernment.onmicrosoft.com")) continue
 
-              if (!dir.accountEnabled) continue;
-              if (dir.jobTitle == "Student") continue;
+              if (!dir.accountEnabled) continue
+              if (dir.jobTitle == "Student") continue
 
-              const yesnet_id = dir.userPrincipalName
-                .toLowerCase()
-                .replace("@yesnet.yk.ca", "");
+              const yesnet_id = dir.userPrincipalName.toLowerCase().replace("@yesnet.yk.ca", "")
 
-              if (!isNaN(Number(yesnet_id))) continue;
+              if (!isNaN(Number(yesnet_id))) continue
 
               let long_name = `${dir.givenName} ${
                 dir.surname
-              } (${dir.userPrincipalName.toLowerCase()})`;
-              let title = "Unknown title";
+              } (${dir.userPrincipalName.toLowerCase()})`
+              let title = "Unknown title"
 
               if (dir.department) {
-                long_name += ` ${dir.department}`;
-              } else dir.department = "Unknown department";
+                long_name += ` ${dir.department}`
+              } else dir.department = "Unknown department"
 
               if (dir.jobTitle) {
-                long_name += ` :  ${dir.jobTitle}`;
-                title = dir.jobTitle;
+                long_name += ` :  ${dir.jobTitle}`
+                title = dir.jobTitle
               }
 
               list.push({
@@ -282,18 +228,18 @@ export class YESNETService {
                 department: dir.department,
                 officeLocation: dir.officeLocation,
                 userPrincipalName: dir.userPrincipalName.toLowerCase(),
-              });
+              })
             }
 
-            return list;
+            return list
           }
         })
         .catch((error) => {
-          console.log("GRAPH ERROR", error);
-          return [];
-        });
+          console.log("GRAPH ERROR", error)
+          return []
+        })
     }
 
-    return [];
+    return []
   }
 }

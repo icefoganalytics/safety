@@ -18,6 +18,12 @@
       "@models": ["../api/src/data/models"]
     }
   },
-  "include": ["src/**/*.ts", "src/**/*.d.ts", "src/**/*.tsx", "src/**/*.vue", "src/serviceWorker.js"],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "src/serviceWorker.js"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

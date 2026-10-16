@@ -1,5 +1,5 @@
-import knex from "knex";
-import { DataIngestionMapping } from "@/data/models";
+import knex from "knex"
+import { DataIngestionMapping } from "@/data/models"
 
 export async function seed(knex: knex.Knex) {
   const dataIngestionMappingsAttributes: DataIngestionMapping[] = [
@@ -73,29 +73,29 @@ export async function seed(knex: knex.Knex) {
       target_attribute: "description",
       target_value: null,
     },
-  ];
+  ]
 
   for (const dataIngestionMappingsAttribute of dataIngestionMappingsAttributes) {
     const { source_id, source_attribute, source_value, target_attribute, target_value } =
-      dataIngestionMappingsAttribute;
+      dataIngestionMappingsAttribute
 
     const existingIds = await knex("data_ingestion_mappings")
       .where({ source_id, source_attribute, target_attribute })
       .andWhere((queryBuilder) => {
         if (source_value == null || source_value === "") {
-          queryBuilder.whereNull("source_value");
+          queryBuilder.whereNull("source_value")
         } else {
-          queryBuilder.where("source_value", source_value);
+          queryBuilder.where("source_value", source_value)
         }
       })
-      .select("id");
+      .select("id")
 
-    const ids = existingIds.map((existing) => existing.id);
+    const ids = existingIds.map((existing) => existing.id)
 
     if (ids.length != 0) {
-      await knex("data_ingestion_mappings").whereIn("id", ids).update({ target_value });
+      await knex("data_ingestion_mappings").whereIn("id", ids).update({ target_value })
     } else {
-      await knex("data_ingestion_mappings").insert(dataIngestionMappingsAttribute);
+      await knex("data_ingestion_mappings").insert(dataIngestionMappingsAttribute)
     }
   }
 }

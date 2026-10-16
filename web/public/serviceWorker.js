@@ -1,14 +1,14 @@
 /* eslint-disable no-undef, no-restricted-globals */
 
-console.log("Loading serviceWorker.js...");
+console.log("Loading serviceWorker.js...")
 
-import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching";
-import { registerRoute, NavigationRoute } from "workbox-routing";
-import { CacheFirst, NetworkFirst, NetworkOnly } from "workbox-strategies";
-import { ExpirationPlugin } from "workbox-expiration";
-import { BackgroundSyncPlugin } from "workbox-background-sync";
+import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
+import { registerRoute, NavigationRoute } from "workbox-routing"
+import { CacheFirst, NetworkFirst, NetworkOnly } from "workbox-strategies"
+import { ExpirationPlugin } from "workbox-expiration"
+import { BackgroundSyncPlugin } from "workbox-background-sync"
 
-self.skipWaiting();
+self.skipWaiting()
 // workbox.core.clientsClaim();
 
 /*
@@ -16,19 +16,19 @@ self.skipWaiting();
  * Do not precahce any where else.
  * Additional files needed to be precache should be configured in vite config
  */
-precacheAndRoute(self.__WB_MANIFEST);
+precacheAndRoute(self.__WB_MANIFEST)
 
 // Works if app is a single page app
 registerRoute(
   new NavigationRoute(createHandlerBoundToURL("/index.html"), {
     denylist: [new RegExp(/^\/api/), new RegExp(/^\/migrate/)],
   })
-);
+)
 
 // Cache fonts
 registerRoute(
   ({ request }) => {
-    return request.destination === "font";
+    return request.destination === "font"
   },
   new CacheFirst({
     cacheName: "font-cache",
@@ -39,12 +39,12 @@ registerRoute(
       }),
     ],
   })
-);
+)
 
 // Cache locations
 registerRoute(
   ({ url }) => {
-    return url.pathname.startsWith("/api/location");
+    return url.pathname.startsWith("/api/location")
   },
   new NetworkFirst({
     cacheName: "api-location",
@@ -55,20 +55,20 @@ registerRoute(
       }),
     ],
   })
-);
+)
 
 const bgSyncPlugin = new BackgroundSyncPlugin("reportQueue", {
-  maxRetentionTime: 30 * 24 * 60 , // Retry for max of 30 days (specified in minutes)
-});
+  maxRetentionTime: 30 * 24 * 60, // Retry for max of 30 days (specified in minutes)
+})
 
 // Queue report submissions
 registerRoute(
   ({ url }) => {
-    return url.pathname.startsWith("/api/offline-reports");
+    return url.pathname.startsWith("/api/offline-reports")
   },
   new NetworkOnly({
     plugins: [bgSyncPlugin],
   }),
   // An optional third parameter specifies the request method
   "POST"
-);
+)

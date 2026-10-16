@@ -1,17 +1,17 @@
-import Papa from "papaparse";
-import { isNil } from "lodash";
+import Papa from "papaparse"
+import { isNil } from "lodash"
 
-import { db } from "@/data/db-client";
+import { db } from "@/data/db-client"
 import {
   DataIngestion,
   dateFields,
   DataIngestionMapping,
   DataIngestionSource,
   DataIngestionSourceNames,
-} from "@/data/models";
-import BaseService from "@/services/base-service";
-import { InsertableDate, ExstractISODate } from "@/utils/formatters";
-import { UserService, DataIngestionSourceService } from "@/services";
+} from "@/data/models"
+import BaseService from "@/services/base-service"
+import { InsertableDate, ExstractISODate } from "@/utils/formatters"
+import { UserService, DataIngestionSourceService } from "@/services"
 
 export class CreateService extends BaseService {
   constructor(
@@ -19,83 +19,85 @@ export class CreateService extends BaseService {
     private sourceId: number,
     private userId: number
   ) {
-    super();
+    super()
   }
 
   async perform(): Promise<void> {
-    const users = new UserService();
-    const dataIngestionSource = new DataIngestionSourceService();
-    if (isNil(this.csvBuffer)) throw new Error("Missing file");
-    if (isNil(this.userId)) throw new Error("Missing user_id");
-    if (isNil(this.sourceId)) throw new Error("Missing source_id");
+    const users = new UserService()
+    const dataIngestionSource = new DataIngestionSourceService()
+    if (isNil(this.csvBuffer)) throw new Error("Missing file")
+    if (isNil(this.userId)) throw new Error("Missing user_id")
+    if (isNil(this.sourceId)) throw new Error("Missing source_id")
 
     if (isNil(await users.getById(Number(this.userId)))) {
-      throw new Error("Invalid user_id");
+      throw new Error("Invalid user_id")
     }
 
     if (isNil(await dataIngestionSource.getById(Number(this.sourceId)))) {
-      throw new Error("Invalid source_id");
+      throw new Error("Invalid source_id")
     }
 
-    const csvText = this.csvBuffer.toString("utf-8");
+    const csvText = this.csvBuffer.toString("utf-8")
 
-    const source = await this.getSourceOrThrow(this.sourceId);
-    const rows = this.parseAndValidateCsv(source, csvText);
+    const source = await this.getSourceOrThrow(this.sourceId)
+    const rows = this.parseAndValidateCsv(source, csvText)
 
     const identifiers = rows
       .map((row) => row[source.identifier_column_name])
-      .filter((id): id is string => Boolean(id));
+      .filter((id): id is string => Boolean(id))
 
-    const mappings = await db("data_ingestion_mappings").where({ source_id: this.sourceId });
-    const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.userId));
+    const mappings = await db("data_ingestion_mappings").where({
+      source_id: this.sourceId,
+    })
+    const transformed = rows.map((row) => this.transformRow(row, mappings, source, this.userId))
     await db.transaction(async (trx) => {
       if (identifiers.length > 0) {
         await trx("data_ingestions")
           .where({ source_id: source.id })
           .whereIn("identifier", identifiers)
-          .delete();
+          .delete()
       }
       for (const row of transformed) {
-        await trx("data_ingestions").insert(row);
+        await trx("data_ingestions").insert(row)
       }
-    });
+    })
   }
 
   private async getSourceOrThrow(source_id: number): Promise<DataIngestionSource> {
-    const source = await db("data_ingestion_sources").where({ id: source_id }).first();
-    if (isNil(source)) throw new Error(`Unknown source ID: ${source_id}`);
-    return source;
+    const source = await db("data_ingestion_sources").where({ id: source_id }).first()
+    if (isNil(source)) throw new Error(`Unknown source ID: ${source_id}`)
+    return source
   }
 
   private parseAndValidateCsv(
     source: DataIngestionSource,
     csvText: string
   ): Record<string, string>[] {
-    const lines = csvText.split(/\r?\n/);
-    const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name));
+    const lines = csvText.split(/\r?\n/)
+    const headerIndex = lines.findIndex((l) => l.includes(source.identifier_column_name))
     if (headerIndex < 0) {
       throw new Error(
         `Invalid data format for Data Source "${source.source_name}": header row with '${source.identifier_column_name}' not found`
-      );
+      )
     }
 
-    const trimmed = lines.slice(headerIndex).join("\n");
+    const trimmed = lines.slice(headerIndex).join("\n")
     const { data, meta } = Papa.parse<Record<string, string>>(trimmed, {
       header: true,
       skipEmptyLines: true,
-    });
+    })
 
     if (meta.fields?.length !== source.column_count) {
       throw new Error(
         `Invalid data format for Data Source "${source.source_name}": wrong number of columns`
-      );
+      )
     }
-    const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length);
+    const validData = data.filter((r) => r[source.identifier_column_name]?.trim().length)
     if (validData.length === 0) {
-      throw new Error("No valid data found in the CSV file.");
+      throw new Error("No valid data found in the CSV file.")
     }
 
-    return validData;
+    return validData
   }
 
   private transformRow(
@@ -105,39 +107,39 @@ export class CreateService extends BaseService {
     user_id: number
   ): DataIngestion {
     if (isNil(source.id)) {
-      throw new Error("Missing source id");
+      throw new Error("Missing source id")
     }
     const dataInjestiontionAttributes: Partial<DataIngestion> = {
       source_id: source.id,
       incident_type_id: 5,
       status_code: "NoAct",
       proxy_user_id: user_id,
-    };
-    const transformed: any = { ...dataInjestiontionAttributes };
+    }
+    const transformed: any = { ...dataInjestiontionAttributes }
 
     mappings.forEach(({ source_attribute, target_attribute, source_value, target_value }) => {
-      const raw = row[source_attribute];
+      const raw = row[source_attribute]
       if (raw == undefined)
-        throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`);
+        throw new Error(`Missing required attribute: ${source_attribute}. Invalid CSV format?`)
 
       if (
         source.source_name === DataIngestionSourceNames.RL6 &&
         target_attribute === source.target_attribute_to_transform
       ) {
-        const existing = transformed.location_detail || "";
-        transformed.location_detail = existing ? `${existing}, ${raw}` : raw;
+        const existing = transformed.location_detail || ""
+        transformed.location_detail = existing ? `${existing}, ${raw}` : raw
       } else if (!isNil(source_value) && raw === source_value) {
-        transformed[target_attribute] = target_value;
+        transformed[target_attribute] = target_value
       } else if (isNil(source_value) || source_value === "") {
         if (dateFields.includes(target_attribute as keyof DataIngestion)) {
-          const extractedDate = ExstractISODate(raw);
-          transformed[target_attribute] = InsertableDate(extractedDate);
+          const extractedDate = ExstractISODate(raw)
+          transformed[target_attribute] = InsertableDate(extractedDate)
         } else {
-          transformed[target_attribute] = raw || null;
+          transformed[target_attribute] = raw || null
         }
       }
-    });
+    })
 
-    return transformed as DataIngestion;
+    return transformed as DataIngestion
   }
 }
