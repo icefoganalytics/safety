@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { param } from "express-validator";
 
 import { IncidentService, RoleService, UserService } from "../services";
-import { ReturnValidationErrors } from "../middleware";
+import { RequireAdmin, ReturnValidationErrors } from "../middleware";
 import { User, UserRole } from "../data/models";
 
 export const userRouter = express.Router();
@@ -60,7 +60,7 @@ userRouter.get("/helpers/:incidentId", async (req: Request, res: Response) => {
   });
 });
 
-userRouter.post("/", async (req: Request, res: Response) => {
+userRouter.post("/", RequireAdmin, async (req: Request, res: Response) => {
   let { user } = req.body;
 
   if (!user) return res.status(400).send("User not found");
