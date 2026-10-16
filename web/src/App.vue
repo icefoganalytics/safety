@@ -5,5 +5,5 @@
   </v-app>
 </template>
 <script setup>
-import Notification from "@/components/Notifications.vue";
+import Notification from "@/components/Notifications.vue"
 </script>

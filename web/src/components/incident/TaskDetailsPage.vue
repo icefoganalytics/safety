@@ -13,27 +13,40 @@
         size="large"
         style="margin-top: -8px"
         :color="selectedReport.status_name == 'Closed' ? 'success' : 'yg_zinc'"
-        variant="flat">
+        variant="flat"
+      >
         <strong>Status:</strong> &nbsp; {{ selectedReport.status_name }}
       </v-chip>
     </h1>
-    <div class="my-3" style="clear: both"></div>
+    <div
+      class="my-3"
+      style="clear: both"
+    ></div>
 
     <!-- <h2 class="text-h6">
       Reported on {{ formatDate(selectedReport.created_at) }} by {{ selectedReport.reporting_person_email }}
     </h2> -->
 
-    <div class="mb-5" style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px">
+    <div
+      class="mb-5"
+      style="background-color: #eee; border: 1px #aaa solid; border-radius: 5px"
+    >
       <!-- {{ selectedReport.steps }} -->
 
-      <v-stepper-vertical v-if="smAndDown" hide-actions>
+      <v-stepper-vertical
+        v-if="smAndDown"
+        hide-actions
+      >
         <v-stepper-vertical-item
           v-for="(step, idx) of selectedReport.steps"
           :value="idx + 1"
           :complete="!isNil(step.complete_date)"
           :title="step.step_title"
           :color="step.complete_date ? 'success' : ''"
-          :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
+          :subtitle="
+            step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''
+          "
+        >
         </v-stepper-vertical-item>
       </v-stepper-vertical>
 
@@ -44,7 +57,8 @@
         alt-labels
         style="clear: both"
         bg-color="#ffffff00"
-        :class="{ unpadded: !smAndDown }">
+        :class="{ unpadded: !smAndDown }"
+      >
         <v-stepper-header>
           <v-stepper-item
             v-for="(step, idx) of selectedReport.steps"
@@ -52,7 +66,10 @@
             :complete="!isNil(step.complete_date)"
             :title="step.step_title"
             :color="step.complete_date ? 'success' : ''"
-            :subtitle="step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''">
+            :subtitle="
+              step.complete_date ? `${formatDate(step.complete_date)} by ${step.complete_name}` : ''
+            "
+          >
           </v-stepper-item>
         </v-stepper-header>
       </v-stepper>
@@ -60,10 +77,16 @@
 
     <section class="mb-5">
       <v-row>
-        <v-col cols="12" md="5">
+        <v-col
+          cols="12"
+          md="5"
+        >
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
-              <div style="width: 100%" class="d-flex">
+              <div
+                style="width: 100%"
+                class="d-flex"
+              >
                 <h4 class="text-h6">{{ selectedReport.incident_type_description }} Information</h4>
               </div>
             </v-card-item>
@@ -72,33 +95,53 @@
               <v-text-field
                 :value="selectedReport.department_name"
                 append-inner-icon="mdi-lock"
-                readonly></v-text-field>
+                readonly
+              ></v-text-field>
 
               <div v-if="stepperValue < 3">
                 <v-label>Reported by</v-label>
                 <v-text-field
                   :value="selectedReport.reporting_person_email"
                   append-inner-icon="mdi-lock"
-                  readonly></v-text-field>
+                  readonly
+                ></v-text-field>
               </div>
 
               <v-label>Supervisor</v-label>
               <v-text-field
                 :value="selectedReport.supervisor_email"
                 append-inner-icon="mdi-lock"
-                readonly></v-text-field>
+                readonly
+              ></v-text-field>
 
               <v-label>Alternate Supervisor</v-label>
               <v-text-field
                 :value="selectedReport.supervisor_alt_email"
                 append-inner-icon="mdi-lock"
-                readonly></v-text-field>
+                readonly
+              ></v-text-field>
 
-              <v-label class="mb-1" style="white-space: inherit">General location</v-label>
-              <v-text-field v-model="selectedReport.location_name" readonly append-inner-icon="mdi-lock" />
+              <v-label
+                class="mb-1"
+                style="white-space: inherit"
+                >General location</v-label
+              >
+              <v-text-field
+                v-model="selectedReport.location_name"
+                readonly
+                append-inner-icon="mdi-lock"
+              />
 
-              <v-label class="mb-1" style="white-space: inherit">Specific location</v-label>
-              <v-text-field v-model="selectedReport.location_detail" readonly append-inner-icon="mdi-lock" />
+              <v-label
+                class="mb-1"
+                style="white-space: inherit"
+                >Specific location</v-label
+              >
+              <v-text-field
+                v-model="selectedReport.location_detail"
+                readonly
+                append-inner-icon="mdi-lock"
+              />
 
               <div v-if="selectedReport.attachments && selectedReport.attachments.length > 0">
                 <v-label>Supporting images</v-label>
@@ -109,7 +152,8 @@
                     variant="flat"
                     v-for="attach of selectedReport.attachments"
                     class="mr-3"
-                    @click="openAttachmentClick(attach)">
+                    @click="openAttachmentClick(attach)"
+                  >
                     <v-icon class="mr-3">mdi-camera</v-icon>
                     {{ attach.file_name }}</v-chip
                   >
@@ -120,20 +164,27 @@
 
           <v-card class="default mb-5">
             <v-card-item class="py-4 px-6 mb-2 bg-sun">
-              <div style="width: 100%" class="d-flex">
+              <div
+                style="width: 100%"
+                class="d-flex"
+              >
                 <h4 class="text-h6">Control Plan</h4>
               </div>
             </v-card-item>
             <v-card-text class="pt-2">
               <ActionList @showAction="doShowActionEdit"></ActionList>
 
-              <ActionCreate v-model="showActionAdd" @doClose="showActionAdd = false"></ActionCreate>
+              <ActionCreate
+                v-model="showActionAdd"
+                @doClose="showActionAdd = false"
+              ></ActionCreate>
 
               <ActionEdit
                 v-model="showActionEdit"
                 :action="actionToEdit"
                 :hazard-id="actionToEdit?.hazard_id"
-                @doClose="showActionEdit = false"></ActionEdit>
+                @doClose="showActionEdit = false"
+              ></ActionEdit>
             </v-card-text>
           </v-card>
         </v-col>
@@ -145,39 +196,99 @@
             </v-card-item>
 
             <v-row class="pa-5 pt-2 pb-6">
-              <v-col cols="12" md="12">
-                <v-label class="mb-1" style="white-space: inherit">Urgency</v-label>
+              <v-col
+                cols="12"
+                md="12"
+              >
+                <v-label
+                  class="mb-1"
+                  style="white-space: inherit"
+                  >Urgency</v-label
+                >
                 <v-btn-toggle
                   v-model="selectedReport.urgency_code"
                   mandatory
                   base-color="#eee"
                   class="mb-4"
                   :border="true"
-                  style="width: 100%">
-                  <v-btn color="green" value="Low" style="width: 25%" class="my-0">Low</v-btn>
-                  <v-btn color="yellow" value="Medium" style="width: 25%" class="my-0">Medium</v-btn>
-                  <v-btn color="#ff4500" value="High" style="width: 25%" class="my-0">High</v-btn>
-                  <v-btn color="red" value="Critical" style="width: 25%" class="my-0">Critical</v-btn>
+                  style="width: 100%"
+                >
+                  <v-btn
+                    color="green"
+                    value="Low"
+                    style="width: 25%"
+                    class="my-0"
+                    >Low</v-btn
+                  >
+                  <v-btn
+                    color="yellow"
+                    value="Medium"
+                    style="width: 25%"
+                    class="my-0"
+                    >Medium</v-btn
+                  >
+                  <v-btn
+                    color="#ff4500"
+                    value="High"
+                    style="width: 25%"
+                    class="my-0"
+                    >High</v-btn
+                  >
+                  <v-btn
+                    color="red"
+                    value="Critical"
+                    style="width: 25%"
+                    class="my-0"
+                    >Critical</v-btn
+                  >
                 </v-btn-toggle>
 
-                <v-label class="mb-1" style="white-space: inherit">Description of event</v-label>
-                <v-textarea v-model="selectedReport.description" readonly append-inner-icon="mdi-lock" hide-details />
+                <v-label
+                  class="mb-1"
+                  style="white-space: inherit"
+                  >Description of event</v-label
+                >
+                <v-textarea
+                  v-model="selectedReport.description"
+                  readonly
+                  append-inner-icon="mdi-lock"
+                  hide-details
+                />
 
-                <div v-if="selectedReport.incident_type_description != 'Hazard'" class="mt-4">
-                  <v-label class="mb-1" style="white-space: inherit">General comments</v-label>
-                  <v-textarea v-model="selectedReport.investigation_notes" hide-details />
+                <div
+                  v-if="selectedReport.incident_type_description != 'Hazard'"
+                  class="mt-4"
+                >
+                  <v-label
+                    class="mb-1"
+                    style="white-space: inherit"
+                    >General comments</v-label
+                  >
+                  <v-textarea
+                    v-model="selectedReport.investigation_notes"
+                    hide-details
+                  />
                 </div>
               </v-col>
 
-              <v-col cols="12" md="12">
-                <v-btn color="primary" class="my-0" @click="saveClick">Save</v-btn>
+              <v-col
+                cols="12"
+                md="12"
+              >
+                <v-btn
+                  color="primary"
+                  class="my-0"
+                  @click="saveClick"
+                  >Save</v-btn
+                >
               </v-col>
             </v-row>
           </v-card>
 
           <InvestigationCard
             v-if="selectedReport.investigation"
-            :investigation="selectedReport.investigation"></InvestigationCard>
+            :investigation="selectedReport.investigation"
+          ></InvestigationCard>
         </v-col>
       </v-row>
     </section>
@@ -185,80 +296,80 @@
 </template>
 
 <script setup>
-import { computed, ref } from "vue";
-import { storeToRefs } from "pinia";
-import { DateTime } from "luxon";
-import { useRoute } from "vue-router";
-import { isNil } from "lodash";
+import { computed, ref } from "vue"
+import { storeToRefs } from "pinia"
+import { DateTime } from "luxon"
+import { useRoute } from "vue-router"
+import { isNil } from "lodash"
 
-import { useDisplay } from "vuetify";
-const { smAndDown } = useDisplay();
+import { useDisplay } from "vuetify"
+const { smAndDown } = useDisplay()
 
-import OperationMenu from "@/components/incident/OperationMenu.vue";
-import ActionList from "@/components/action/ActionList.vue";
-import ActionCreate from "@/components/action/ActionCreate.vue";
-import ActionEdit from "@/components/action/ActionDialog.vue";
-import InvestigationCard from "./InvestigationCard.vue";
+import OperationMenu from "@/components/incident/OperationMenu.vue"
+import ActionList from "@/components/action/ActionList.vue"
+import ActionCreate from "@/components/action/ActionCreate.vue"
+import ActionEdit from "@/components/action/ActionDialog.vue"
+import InvestigationCard from "./InvestigationCard.vue"
 
-import { useReportStore } from "@/store/ReportStore";
+import { useReportStore } from "@/store/ReportStore"
 
-const reportStore = useReportStore();
-const { initialize, loadReport, updateReport, openAttachment } = reportStore;
-const { selectedReport } = storeToRefs(reportStore);
+const reportStore = useReportStore()
+const { initialize, loadReport, updateReport, openAttachment } = reportStore
+const { selectedReport } = storeToRefs(reportStore)
 
-const router = useRoute();
-const reportId = router.params.id;
+const router = useRoute()
+const reportId = router.params.id
 
-await initialize();
-await loadReport(reportId);
+await initialize()
+await loadReport(reportId)
 
-const showActionAdd = ref(false);
-const showActionEdit = ref(false);
-const actionToEdit = ref(null);
+const showActionAdd = ref(false)
+const showActionEdit = ref(false)
+const actionToEdit = ref(null)
 
 setTimeout(() => {
-  let list = document.getElementsByClassName("v-stepper-item");
+  let list = document.getElementsByClassName("v-stepper-item")
 
   for (let i = 0; i < list.length - 1; i++) {
-    let item = list[i];
-    let hr = document.createElement("hr");
-    hr.classList.add("v-divider");
-    hr.classList.add("v-theme--light");
-    hr.setAttribute("area-orientation", "horizontal");
-    hr.setAttribute("role", "separator");
-    item.after(hr);
+    let item = list[i]
+    let hr = document.createElement("hr")
+    hr.classList.add("v-divider")
+    hr.classList.add("v-theme--light")
+    hr.setAttribute("area-orientation", "horizontal")
+    hr.setAttribute("role", "separator")
+    item.after(hr)
   }
-}, 100);
+}, 100)
 
 const stepperValue = computed(() => {
   if (selectedReport.value) {
     for (let i = 1; i < selectedReport.value.steps.length; i++) {
-      const step = selectedReport.value.steps[i - 1];
+      const step = selectedReport.value.steps[i - 1]
 
-      if (step.complete_date) continue;
+      if (step.complete_date) continue
 
-      return i;
+      return i
     }
   }
-  return 0;
-});
+  return 0
+})
 
 function formatDate(input) {
-  if (!input) return "";
-  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:mma");
+  if (!input) return ""
+  return DateTime.fromISO(input.toString()).toFormat("yyyy/MM/dd @ h:mma")
 }
 
 function doShowActionEdit(action) {
-  actionToEdit.value = action;
-  showActionEdit.value = true;
+  actionToEdit.value = action
+  showActionEdit.value = true
 }
 
 async function saveClick() {
-  await updateReport().then(() => {});
+  await updateReport().then(() => {})
 }
 
 function openAttachmentClick(attachment) {
-  openAttachment(attachment);
+  openAttachment(attachment)
 }
 </script>
 

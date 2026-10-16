@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+import { defineStore } from "pinia"
 
-import { useApiStore } from "@/store/ApiStore";
-import { ROLE_URL } from "@/urls";
+import { useApiStore } from "@/store/ApiStore"
+import { ROLE_URL } from "@/urls"
 
 export const useRoleStore = defineStore("role", {
   state: () => ({
@@ -10,21 +10,21 @@ export const useRoleStore = defineStore("role", {
   }),
   actions: {
     async initialize() {
-      await this.loadRoles();
+      await this.loadRoles()
     },
 
     async loadRoles() {
-      this.isLoading = true;
-      let api = useApiStore();
+      this.isLoading = true
+      let api = useApiStore()
       return api
         .secureCall("get", ROLE_URL)
         .then((resp) => {
-          this.roles = resp.data;
-          return resp.data;
+          this.roles = resp.data
+          return resp.data
         })
         .finally(() => {
-          this.isLoading = false;
-        });
+          this.isLoading = false
+        })
     },
   },
-});
+})

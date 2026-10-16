@@ -1,34 +1,40 @@
-import moment from "moment";
-import _, { isDate, isNil } from "lodash";
-import { DateTime } from "luxon";
-import markdownit from "markdown-it";
+import moment from "moment"
+import _, { isDate, isNil } from "lodash"
+import { DateTime } from "luxon"
+import markdownit from "markdown-it"
 
-import { DB_CLIENT } from "../config";
-import { db as knex } from "../data/db-client";
+import { DB_CLIENT } from "../config"
+import { db as knex } from "../data/db-client"
 
 export function FormatDate(input: Date): string {
-  return moment(input).format("YYYY-MM-DD");
+  return moment(input).format("YYYY-MM-DD")
 }
 
 export function FormatMoney(amount: number): string {
-  return Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(amount);
+  return Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(amount)
 }
 
 export function CleanDouble(input: any): number {
-  let output = _.replace(input, new RegExp(",", "g"), "");
-  output = _.replace(output, new RegExp("\\$", "g"), "");
-  output = _.replace(output, new RegExp("-", "g"), "");
+  let output = _.replace(input, new RegExp(",", "g"), "")
+  output = _.replace(output, new RegExp("\\$", "g"), "")
+  output = _.replace(output, new RegExp("-", "g"), "")
 
-  return Number(output);
+  return Number(output)
 }
 
 export function CleanInteger(input: any): number {
-  return Math.round(CleanDouble(input));
+  return Math.round(CleanDouble(input))
 }
 
-export function RenderMarkdown(input: string): { output: string; isMarkdown: boolean } {
-  let containsNewlines = RegExp(/.*\n/g).test(input);
-  let containsHash = input.includes("#");
+export function RenderMarkdown(input: string): {
+  output: string
+  isMarkdown: boolean
+} {
+  let containsNewlines = RegExp(/.*\n/g).test(input)
+  let containsHash = input.includes("#")
 
   if (containsNewlines || containsHash) {
     return {
@@ -38,41 +44,41 @@ export function RenderMarkdown(input: string): { output: string; isMarkdown: boo
         typographer: true,
       }).render(input),
       isMarkdown: true,
-    };
+    }
   }
 
-  return { output: input, isMarkdown: false };
+  return { output: input, isMarkdown: false }
 }
 
 export function InsertableDate(input: string | null) {
   if (input) {
-    let date = new Date();
+    let date = new Date()
 
-    if (isDate(input)) date = input;
+    if (isDate(input)) date = input
 
-    let jsD = DateTime.fromJSDate(new Date(input));
-    let isD = DateTime.fromISO(input);
+    let jsD = DateTime.fromJSDate(new Date(input))
+    let isD = DateTime.fromISO(input)
 
-    if (jsD.isValid) date = jsD.toJSDate();
-    if (isD.isValid) date = isD.toJSDate();
+    if (jsD.isValid) date = jsD.toJSDate()
+    if (isD.isValid) date = isD.toJSDate()
 
     if (DB_CLIENT == "oracledb") {
       return knex.raw(
         `TO_TIMESTAMP('${DateTime.fromJSDate(date).toFormat("yyyy-MM-dd HH:mm:ss")}', 'YYYY-MM-DD HH24:MI:SS')`
-      );
+      )
     }
 
-    return date;
+    return date
   }
 
-  return null;
+  return null
 }
 
-export const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}/;
+export const ISO_DATE_REGEX = /^\d{4}-\d{2}-\d{2}/
 
 export function ExstractISODate(str: string): string | null {
-  const cleanString = str.trim();
-  if (isNil(cleanString)) return null;
-  const match = cleanString.match(ISO_DATE_REGEX);
-  return match ? match[0] : null;
+  const cleanString = str.trim()
+  if (isNil(cleanString)) return null
+  const match = cleanString.match(ISO_DATE_REGEX)
+  return match ? match[0] : null
 }

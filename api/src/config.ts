@@ -1,41 +1,37 @@
-import * as dotenv from "dotenv";
+import * as dotenv from "dotenv"
 
-export const NODE_ENV = process.env.NODE_ENV || "development";
+export const NODE_ENV = process.env.NODE_ENV || "development"
 
-let path;
+let path
 switch (process.env.NODE_ENV) {
   case "test":
-    path = `.env.test`;
-    break;
+    path = `.env.test`
+    break
   case "production":
-    path = `.env.production`;
-    break;
+    path = `.env.production`
+    break
   default:
-    path = `.env.development`;
+    path = `.env.development`
 }
-dotenv.config({ path: path, override: true });
+dotenv.config({ path: path, override: true })
 
-console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`);
+console.log(`LOADING ${NODE_ENV} CONFIG FROM ${path}`)
 
-export const API_PORT = process.env.API_PORT || "3000";
+export const API_PORT = process.env.API_PORT || "3000"
 // TODO: Remove this value once it's setup in the environment
-export const FRONTEND_URL =
-  process.env.FRONTEND_URL || "https://safety.gov.yk.ca";
-export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || "";
-export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(
-  /\/$/,
-  ""
-);
-export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE;
+export const FRONTEND_URL = process.env.FRONTEND_URL || "https://safety.gov.yk.ca"
+export const AUTH_REDIRECT = process.env.AUTH_REDIRECT || ""
+export const AUTH0_DOMAIN = (`${process.env.AUTH0_DOMAIN}` || "").replace(/\/$/, "")
+export const AUTH0_AUDIENCE = process.env.AUTH0_AUDIENCE
 
-export const DB_USER = process.env.DB_USER || "postgres";
-export const DB_PASS = process.env.DB_PASS || "";
-export const DB_HOST = process.env.DB_HOST || "";
-export const DB_PORT = parseInt(process.env.DB_PORT || "") || 5432;
-export const DB_NAME = process.env.DB_NAME || "";
-export const DB_CLIENT = process.env.DB_CLIENT || "postgresql";
+export const DB_USER = process.env.DB_USER || "postgres"
+export const DB_PASS = process.env.DB_PASS || ""
+export const DB_HOST = process.env.DB_HOST || ""
+export const DB_PORT = parseInt(process.env.DB_PORT || "") || 5432
+export const DB_NAME = process.env.DB_NAME || ""
+export const DB_CLIENT = process.env.DB_CLIENT || "postgresql"
 
-export const API_GATEWAY_KEY = process.env.API_GATEWAY_KEY || "";
+export const API_GATEWAY_KEY = process.env.API_GATEWAY_KEY || ""
 
 export const DB_CONFIG = {
   client: DB_CLIENT,
@@ -47,7 +43,7 @@ export const DB_CONFIG = {
     port: DB_PORT,
   },
   pool: { min: 0, reapIntervalMillis: 600000 },
-};
+}
 
 export const DB_CONFIG_DEV = {
   client: DB_CLIENT,
@@ -58,13 +54,13 @@ export const DB_CONFIG_DEV = {
     database: DB_NAME,
     port: DB_PORT,
   },
-};
+}
 
-export const MAIL_FROM = process.env.MAIL_FROM || "SafetyPortal@yukon.ca";
-export const MAIL_HOST = process.env.MAIL_HOST || "smtp.gov.yk.ca";
-export const MAIL_PORT = process.env.MAIL_PORT || 25;
-export const MAIL_USER = process.env.MAIL_USER || "";
-export const MAIL_PASS = process.env.MAIL_PASS || "";
+export const MAIL_FROM = process.env.MAIL_FROM || "SafetyPortal@yukon.ca"
+export const MAIL_HOST = process.env.MAIL_HOST || "smtp.gov.yk.ca"
+export const MAIL_PORT = process.env.MAIL_PORT || 25
+export const MAIL_USER = process.env.MAIL_USER || ""
+export const MAIL_PASS = process.env.MAIL_PASS || ""
 
 export const MAIL_CONFIG_DEV = {
   host: MAIL_HOST,
@@ -74,24 +70,24 @@ export const MAIL_CONFIG_DEV = {
     user: MAIL_USER,
     pass: MAIL_PASS,
   },
-};
+}
 
 export const MAIL_CONFIG = {
   host: MAIL_HOST,
   port: MAIL_PORT,
   secure: false, // true for 465, false for other ports
-};
+}
 
-export const APPLICATION_NAME = process.env.APPLICATION_NAME || "STICH";
+export const APPLICATION_NAME = process.env.APPLICATION_NAME || "STICH"
 
-export const DB_SCHEMA = process.env.DB_SCHEMA || "";
-export const DB_USER_TABLE = process.env.DB_USER_TABLE || "";
+export const DB_SCHEMA = process.env.DB_SCHEMA || ""
+export const DB_USER_TABLE = process.env.DB_USER_TABLE || ""
 
 // TODO: Remove this value once it's setup in the environment
-export const AD_CLIENT_ID = "15a9a9d8-2dcd-4cd8-965e-e2a7d044c7de"; // process.env.AD_CLIENT_ID || "";
-export const AD_CLIENT_SECRET = process.env.AD_CLIENT_SECRET || "";
-export const AD_TENANT_ID = process.env.AD_TENANT_ID || "";
+export const AD_CLIENT_ID = "15a9a9d8-2dcd-4cd8-965e-e2a7d044c7de" // process.env.AD_CLIENT_ID || "";
+export const AD_CLIENT_SECRET = process.env.AD_CLIENT_SECRET || ""
+export const AD_TENANT_ID = process.env.AD_TENANT_ID || ""
 
-export const YESNET_CLIENT_ID = process.env.YESNET_CLIENT_ID || ""; // process.env.AD_CLIENT_ID || "";
-export const YESNET_CLIENT_SECRET = process.env.YESNET_CLIENT_SECRET || "";
-export const YESNET_TENANT_ID = process.env.YESNET_TENANT_ID || "";
+export const YESNET_CLIENT_ID = process.env.YESNET_CLIENT_ID || "" // process.env.AD_CLIENT_ID || "";
+export const YESNET_CLIENT_SECRET = process.env.YESNET_CLIENT_SECRET || ""
+export const YESNET_TENANT_ID = process.env.YESNET_TENANT_ID || ""

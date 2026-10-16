@@ -25,12 +25,27 @@
       "short_name": "Report",
       "description": "Report an incident",
       "url": "/report-an-incident",
-      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ],
   "description": "Submit and view hazards and incidents",
   "screenshots": [
-    { "form_factor": "narrow", "sizes": "512x512", "type": "image/png", "src": "/icon-512.png" },
-    { "form_factor": "wide", "sizes": "512x512", "type": "image/png", "src": "/icon-512.png" }
+    {
+      "form_factor": "narrow",
+      "sizes": "512x512",
+      "type": "image/png",
+      "src": "/icon-512.png"
+    },
+    {
+      "form_factor": "wide",
+      "sizes": "512x512",
+      "type": "image/png",
+      "src": "/icon-512.png"
+    }
   ]
 }

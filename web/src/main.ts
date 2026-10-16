@@ -1,17 +1,17 @@
-import { createApp } from "vue";
-import { createPinia } from "pinia";
+import { createApp } from "vue"
+import { createPinia } from "pinia"
 
-import { router } from "@/routes";
-import auth0 from "@/plugins/auth";
-import vuetify from "@/plugins/vuetify";
-import { registerPlugins } from "@/plugins";
+import { router } from "@/routes"
+import auth0 from "@/plugins/auth"
+import vuetify from "@/plugins/vuetify"
+import { registerPlugins } from "@/plugins"
 
-const pinia = createPinia();
+const pinia = createPinia()
 
-import App from "./App.vue";
-const app = createApp(App);
-app.use(pinia).use(router).use(auth0).use(vuetify);
+import App from "./App.vue"
+const app = createApp(App)
+app.use(pinia).use(router).use(auth0).use(vuetify)
 
-registerPlugins(app);
+registerPlugins(app)
 
-app.mount("#app");
+app.mount("#app")

@@ -1,17 +1,34 @@
 <template>
-  <v-dialog width="700px" persistent @keydown.esc="closeClick">
+  <v-dialog
+    width="700px"
+    persistent
+    @keydown.esc="closeClick"
+  >
     <v-card>
-      <v-toolbar color="primary" density="comfortable">
-        <v-toolbar-title class="text-white" style="">Control Plan</v-toolbar-title>
+      <v-toolbar
+        color="primary"
+        density="comfortable"
+      >
+        <v-toolbar-title
+          class="text-white"
+          style=""
+          >Control Plan</v-toolbar-title
+        >
         <v-toolbar-items>
-          <v-btn icon="mdi-close" @click="closeClick"></v-btn>
+          <v-btn
+            icon="mdi-close"
+            @click="closeClick"
+          ></v-btn>
         </v-toolbar-items>
       </v-toolbar>
 
       <v-card-text v-if="action.status_code == 'Open'">
         <p class="mb-4">Before an Action can be completed, it must first be classified.</p>
         <div class="border">
-          <ActionClassifyForm :action="action" @do-close="closeClick" />
+          <ActionClassifyForm
+            :action="action"
+            @do-close="closeClick"
+          />
         </div>
       </v-card-text>
 
@@ -20,10 +37,19 @@
           v-if="action.is_committee_task == 0"
           :action="action"
           :readonly="readonly"
-          @do-close="closeClick" />
-        <CommitteeActionCompleteForm v-else :action="action" :readonly="readonly" @do-close="closeClick" />
+          @do-close="closeClick"
+        />
+        <CommitteeActionCompleteForm
+          v-else
+          :action="action"
+          :readonly="readonly"
+          @do-close="closeClick"
+        />
 
-        <div v-if="hazardId" class="mt-5">
+        <div
+          v-if="hazardId"
+          class="mt-5"
+        >
           <v-label>Attachments</v-label>
           <div class="d-flex">
             <v-file-input
@@ -33,18 +59,27 @@
               prepend-icon=""
               prepend-inner-icon="mdi-paperclip"
               chips
-              multiple />
-            <v-btn color="primary" style="height: 40px" :disabled="upload.length == 0" @click="uploadClick"
+              multiple
+            />
+            <v-btn
+              color="primary"
+              style="height: 40px"
+              :disabled="upload.length == 0"
+              @click="uploadClick"
               >Upload</v-btn
             >
           </div>
 
-          <div v-if="attachments && attachments.length > 0" class="d-flex flex-wrap">
+          <div
+            v-if="attachments && attachments.length > 0"
+            class="d-flex flex-wrap"
+          >
             <v-chip
               v-for="attachment in attachments"
               :key="attachment.id"
               class="mr-2 mb-2"
-              @click="openAttachmentClick(attachment)">
+              @click="openAttachmentClick(attachment)"
+            >
               <v-icon class="mr-3">mdi-camera</v-icon>
               {{ attachment.file_name }}
             </v-chip>
@@ -57,45 +92,45 @@
 </template>
 
 <script setup>
-import { ref, defineProps, watch } from "vue";
-import { storeToRefs } from "pinia";
-import { isNil, isNumber } from "lodash";
+import { ref, defineProps, watch } from "vue"
+import { storeToRefs } from "pinia"
+import { isNil, isNumber } from "lodash"
 
-const props = defineProps(["action", "hazardId", "readonly"]);
+const props = defineProps(["action", "hazardId", "readonly"])
 
-const emit = defineEmits(["doClose"]);
+const emit = defineEmits(["doClose"])
 
-import { useHazardStore } from "@/store/HazardStore";
-import ActionCompleteForm from "./ActionCompleteForm.vue";
-import ActionClassifyForm from "./ActionClassifyForm.vue";
-import CommitteeActionCompleteForm from "./CommitteeActionCompleteForm.vue";
+import { useHazardStore } from "@/store/HazardStore"
+import ActionCompleteForm from "./ActionCompleteForm.vue"
+import ActionClassifyForm from "./ActionClassifyForm.vue"
+import CommitteeActionCompleteForm from "./CommitteeActionCompleteForm.vue"
 
-const hazardStore = useHazardStore();
-const { attachments } = storeToRefs(hazardStore);
-const { openAttachment } = hazardStore;
-const upload = ref([]);
+const hazardStore = useHazardStore()
+const { attachments } = storeToRefs(hazardStore)
+const { openAttachment } = hazardStore
+const upload = ref([])
 
 watch(
   () => props.hazardId,
   (val) => {
-    if (!isNil(val) && isNumber(val)) hazardStore.loadAttachments(val);
+    if (!isNil(val) && isNumber(val)) hazardStore.loadAttachments(val)
   }
-);
+)
 
 function closeClick() {
-  emit("doClose");
+  emit("doClose")
 }
 
 async function uploadClick() {
-  if (isNil(props.hazardId) || upload.value.length == 0) return;
+  if (isNil(props.hazardId) || upload.value.length == 0) return
 
   await hazardStore.upload(props.hazardId, upload.value).then(() => {
-    upload.value = [];
-    hazardStore.loadAttachments(props.hazardId);
-  });
+    upload.value = []
+    hazardStore.loadAttachments(props.hazardId)
+  })
 }
 
 function openAttachmentClick(attachment) {
-  openAttachment(attachment);
+  openAttachment(attachment)
 }
 </script>

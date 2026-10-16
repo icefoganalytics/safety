@@ -1,12 +1,12 @@
-import express, { Request, Response } from "express";
+import express, { Request, Response } from "express"
 
-import { DataIngestionSourceService } from "@/services";
+import { DataIngestionSourceService } from "@/services"
 
-export const dataIngestionSourceRouter = express.Router();
-const db = new DataIngestionSourceService();
+export const dataIngestionSourceRouter = express.Router()
+const db = new DataIngestionSourceService()
 
 dataIngestionSourceRouter.get("/", async (req: Request, res: Response) => {
-  const list = await db.getAll();
+  const list = await db.getAll()
 
-  return res.json({ dataIngestionSources: list });
-});
+  return res.json({ dataIngestionSources: list })
+})

@@ -27,7 +27,7 @@ AD_TENANT_ID=XXXXXX
 
 ```
 
-2. Open a new terminal and boot the API service
+1. Open a new terminal and boot the API service
 
    ```shell
    cd api/
@@ -35,7 +35,7 @@ AD_TENANT_ID=XXXXXX
    npm run start
    ```
 
-3. Open a new terminal and boot the Web service
+2. Open a new terminal and boot the Web service
 
    ```shell
    cd web/
@@ -43,27 +43,27 @@ AD_TENANT_ID=XXXXXX
    npm run start
    ```
 
-4. Open a new terminal and boot the DB service
+3. Open a new terminal and boot the DB service
 
    ```shell
    docker compose -f docker-compose.yaml up --remove-orphans
    ```
 
-5. Open a web browser to run the migrations. Go to the following URL:
+4. Open a web browser to run the migrations. Go to the following URL:
 
     ```
     http://localhost:3000/migrate/latest
     ```
 
-6. In the same tab, run the seeds, by opening the following URL:
+5. In the same tab, run the seeds, by opening the following URL:
 
     ```
     http://localhost:3000/migrate/seed/all
     ```
 
-7. Log in to the app at http://localhost:8080/
+6. Log in to the app at <http://localhost:8080/>
 
-8. Once you have created your account, make yourself a System Admin using your database manager (such as DBeaver). Connect to the database using the password you set in the .env.development file, and run the following SQL:
+7. Once you have created your account, make yourself a System Admin using your database manager (such as DBeaver). Connect to the database using the password you set in the .env.development file, and run the following SQL:
 
     ```sql
     INSERT INTO user_roles (

@@ -1,10 +1,10 @@
-import { createAuth0 } from "@auth0/auth0-vue";
-import { production, uat, development } from "../../auth-config.json";
+import { createAuth0 } from "@auth0/auth0-vue"
+import { production, uat, development } from "../../auth-config.json"
 
-let config = production;
+let config = production
 
-if (window.location.host == "localhost:8080") config = development;
-else if (window.location.host == "safety-test.gov.yk.ca") config = uat;
+if (window.location.host == "localhost:8080") config = development
+else if (window.location.host == "safety-test.gov.yk.ca") config = uat
 
 export default createAuth0({
   domain: config.domain,
@@ -14,4 +14,4 @@ export default createAuth0({
     redirect_uri: window.location.origin,
   },
   cacheLocation: "localstorage",
-});
+})

@@ -1,15 +1,32 @@
 <template>
-  <v-dialog width="700px" persistent>
+  <v-dialog
+    width="700px"
+    persistent
+  >
     <v-card v-if="hazard">
-      <v-toolbar color="primary" density="comfortable">
-        <v-toolbar-title class="text-white" style="">Hazard Details</v-toolbar-title>
+      <v-toolbar
+        color="primary"
+        density="comfortable"
+      >
+        <v-toolbar-title
+          class="text-white"
+          style=""
+          >Hazard Details</v-toolbar-title
+        >
         <v-spacer> </v-spacer>
         <v-toolbar-items>
-          <v-btn icon="mdi-close" @click="closeClick"></v-btn>
+          <v-btn
+            icon="mdi-close"
+            @click="closeClick"
+          ></v-btn>
         </v-toolbar-items>
       </v-toolbar>
       <v-card-text class="pt-5">
-        <table class="info-table" cellpadding="0" cellspacing="0">
+        <table
+          class="info-table"
+          cellpadding="0"
+          cellspacing="0"
+        >
           <tr>
             <td style="width: 150px">Current Status</td>
             <td>{{ hazard.status_code }}</td>
@@ -47,23 +64,23 @@
 </template>
 
 <script setup>
-import { DateTime } from "luxon";
-import { useHazardStore } from "@/store/HazardStore";
-import { storeToRefs } from "pinia";
+import { DateTime } from "luxon"
+import { useHazardStore } from "@/store/HazardStore"
+import { storeToRefs } from "pinia"
 
-const emit = defineEmits(["update:modelValue"]);
+const emit = defineEmits(["update:modelValue"])
 
-const hazardStore = useHazardStore();
-const { select } = hazardStore;
-const { selectedHazard: hazard } = storeToRefs(hazardStore);
+const hazardStore = useHazardStore()
+const { select } = hazardStore
+const { selectedHazard: hazard } = storeToRefs(hazardStore)
 
 function closeClick() {
-  select(null);
-  emit("update:modelValue", false);
+  select(null)
+  emit("update:modelValue", false)
 }
 
 function formatDate(input) {
-  return DateTime.fromISO(input).toFormat("yyyy-MM-dd");
+  return DateTime.fromISO(input).toFormat("yyyy-MM-dd")
 }
 </script>
 

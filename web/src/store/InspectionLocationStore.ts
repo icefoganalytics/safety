@@ -1,7 +1,7 @@
-import { defineStore } from "pinia";
+import { defineStore } from "pinia"
 
-import { useApiStore } from "@/store/ApiStore";
-import { INSPECTION_LOCATION_URL } from "@/urls";
+import { useApiStore } from "@/store/ApiStore"
+import { INSPECTION_LOCATION_URL } from "@/urls"
 
 export const useInspectionLocationStore = defineStore("inspectionLocation", {
   state: () => ({
@@ -10,39 +10,39 @@ export const useInspectionLocationStore = defineStore("inspectionLocation", {
   }),
   actions: {
     async initialize() {
-      await this.loadInspectionLocations();
+      await this.loadInspectionLocations()
     },
 
     async loadInspectionLocations() {
-      this.isLoading = true;
-      let api = useApiStore();
+      this.isLoading = true
+      let api = useApiStore()
       return api
         .secureCall("get", INSPECTION_LOCATION_URL)
         .then((resp) => {
-          this.inspectionlocations = resp.data;
+          this.inspectionlocations = resp.data
 
           for (const location of this.inspectionlocations) {
-            location.title = location.name;
-            if (!location.description) location.title = `${location.name} (${location.description})`;
+            location.title = location.name
+            if (!location.description) location.title = `${location.name} (${location.description})`
           }
 
-          return resp.data;
+          return resp.data
         })
         .finally(() => {
-          this.isLoading = false;
-        });
+          this.isLoading = false
+        })
     },
   },
-});
+})
 
 export interface InspectionLocation {
-  id: number;
-  name: string;
-  description?: string;
-  department_code: string;
-  building_id?: number;
-  location_code?: string;
-  branch?: string;
+  id: number
+  name: string
+  description?: string
+  department_code: string
+  building_id?: number
+  location_code?: string
+  branch?: string
 
-  title?: string;
+  title?: string
 }

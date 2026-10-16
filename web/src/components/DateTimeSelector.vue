@@ -1,5 +1,8 @@
 <template>
-  <div class="top" :class="has_focus ? 'hf' : ''">
+  <div
+    class="top"
+    :class="has_focus ? 'hf' : ''"
+  >
     <div style="position: absolute; z-index: 22; height: 5px !important; width: 100%; top: -1px">
       <div class="inlay">
         <label>{{ label }}</label>
@@ -23,13 +26,14 @@
       :is-24="false"
       required
       :action-row="{ showCancel: false }"
-      placeholder="YYYY/MM/DD HH:MM am" />
+      placeholder="YYYY/MM/DD HH:MM am"
+    />
   </div>
 </template>
 
 <script>
-import VueDatePicker from "@vuepic/vue-datepicker";
-import "@vuepic/vue-datepicker/dist/main.css";
+import VueDatePicker from "@vuepic/vue-datepicker"
+import "@vuepic/vue-datepicker/dist/main.css"
 
 export default {
   props: ["modelValue", "label", "max", "readonly", "min"],
@@ -40,26 +44,26 @@ export default {
       output: null,
       has_focus: false,
       isReadonly: false,
-    };
+    }
   },
   mounted() {
     if (this.modelValue) {
-      this.output = this.modelValue;
+      this.output = this.modelValue
     }
-    console.log("readonly", this.readonly);
-    if (this.readonly && this.readonly == true) this.isReadonly = true;
+    console.log("readonly", this.readonly)
+    if (this.readonly && this.readonly == true) this.isReadonly = true
   },
   watch: {
     output(to, from) {
-      this.$emit("input", this.output);
-      this.$emit("update:modelValue", this.output);
+      this.$emit("input", this.output)
+      this.$emit("update:modelValue", this.output)
     },
     readonly(to, from) {
-      if (to && to == true) this.isReadonly = true;
-      else this.isReadonly = false;
+      if (to && to == true) this.isReadonly = true
+      else this.isReadonly = false
     },
   },
-};
+}
 </script>
 
 <style>

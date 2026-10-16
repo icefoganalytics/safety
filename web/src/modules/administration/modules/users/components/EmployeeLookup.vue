@@ -1,8 +1,20 @@
 <template>
   <div>
-    <v-autocomplete :label="`${label} ${searchLocation}`" v-model="model" v-model:search="search" :items="items"
-      :loading="isLoading" prepend-inner-icon="mdi-magnify" item-value="id" item-title="long_name" hide-no-data outlined
-      no-filter clearable return-object>
+    <v-autocomplete
+      :label="`${label} ${searchLocation}`"
+      v-model="model"
+      v-model:search="search"
+      :items="items"
+      :loading="isLoading"
+      prepend-inner-icon="mdi-magnify"
+      item-value="id"
+      item-title="long_name"
+      hide-no-data
+      outlined
+      no-filter
+      clearable
+      return-object
+    >
       <template #no-data>
         <div class="mx-4 text-caption">
           <strong>No matches found?</strong>
@@ -11,7 +23,13 @@
       </template>
     </v-autocomplete>
 
-    <v-card color="yg_sun" variant="tonal" class="mb-4" v-if="model && model.email" elevation="0">
+    <v-card
+      color="yg_sun"
+      variant="tonal"
+      class="mb-4"
+      v-if="model && model.email"
+      elevation="0"
+    >
       <v-card-text>
         <v-row>
           <v-col cols="9">
@@ -21,11 +39,23 @@
             <strong>Location:</strong> {{ model.officeLocation }}
           </v-col>
           <v-col class="text-right">
-            <v-btn @click="doSelect" color="primary" class="mb-0" small>
+            <v-btn
+              @click="doSelect"
+              color="primary"
+              class="mb-0"
+              small
+            >
               <v-icon class="mr-2">mdi-account-check</v-icon>
               {{ actionName }}
             </v-btn>
-            <v-btn @click="clear" color="secondary" class="ml-4 mb-0 mt-4" small>Clear</v-btn></v-col>
+            <v-btn
+              @click="clear"
+              color="secondary"
+              class="ml-4 mb-0 mt-4"
+              small
+              >Clear</v-btn
+            ></v-col
+          >
         </v-row>
       </v-card-text>
     </v-card>
@@ -33,9 +63,9 @@
 </template>
 
 <script>
-import { mapActions } from "pinia";
-import { useUserAdminStore } from "../store";
-import { isNil } from "lodash";
+import { mapActions } from "pinia"
+import { useUserAdminStore } from "../store"
+import { isNil } from "lodash"
 
 export default {
   name: "EmployeeLookup",
@@ -68,61 +98,61 @@ export default {
               : this.searchIndex++; */
     },
     selected() {
-      this.search = "";
+      this.search = ""
     },
     doSelect() {
       if (this.select) {
-        this.select(this.model);
-        this.clear();
+        this.select(this.model)
+        this.clear()
       }
     },
     clear() {
-      this.model = undefined;
-      this.search = "";
+      this.model = undefined
+      this.search = ""
     },
   },
   computed: {
     searchIcon() {
-      return this.searches[this.searchIndex].icon;
+      return this.searches[this.searchIndex].icon
     },
     searchLocation() {
-      return this.searches[this.searchIndex].name;
+      return this.searches[this.searchIndex].name
     },
     searchAlt() {
-      return this.searches[this.searchIndex].alt;
+      return this.searches[this.searchIndex].alt
     },
   },
   watch: {
     search(val) {
-      clearTimeout(this.timerId);
+      clearTimeout(this.timerId)
 
       if (isNil(val) || val.includes("(") || val.includes(":") || val.trim().length < 2) {
-        this.items = [];
-        return;
+        this.items = []
+        return
       }
 
       // delay new call 500ms
       this.timerId = setTimeout(() => {
         if (!val) {
-          this.items = [];
-          return;
+          this.items = []
+          return
         }
 
-        if (val.length < 3) return;
+        if (val.length < 3) return
 
-        if (this.isLoading) return;
-        this.isLoading = true;
+        if (this.isLoading) return
+        this.isLoading = true
 
         this.searchDirectory({ terms: val })
           .then((res) => {
-            this.items = res;
+            this.items = res
           })
           .catch((err) => {
-            console.log(err);
+            console.log(err)
           })
-          .finally(() => (this.isLoading = false));
-      }, 500);
+          .finally(() => (this.isLoading = false))
+      }, 500)
     },
   },
-};
+}
 </script>

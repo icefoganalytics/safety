@@ -1,13 +1,13 @@
 // Plugins
-import vue from "@vitejs/plugin-vue";
-import vuetify from "vite-plugin-vuetify";
-import { VitePWA } from "vite-plugin-pwa";
+import vue from "@vitejs/plugin-vue"
+import vuetify from "vite-plugin-vuetify"
+import { VitePWA } from "vite-plugin-pwa"
 
 // Utilities
-import { defineConfig } from "vite";
-import path from "path";
+import { defineConfig } from "vite"
+import path from "path"
 
-import preloadPrefetch from "vite-plugin-preload-prefetch";
+import preloadPrefetch from "vite-plugin-preload-prefetch"
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -48,4 +48,4 @@ export default defineConfig({
   server: {
     port: 8080,
   },
-});
+})

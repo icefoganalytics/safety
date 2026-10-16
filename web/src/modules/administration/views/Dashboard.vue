@@ -5,20 +5,35 @@
     style="margin: -13px -16px 10px -16px"
     class="pl-4 mb-4"
     color="white"
-    active-color="#fff">
+    active-color="#fff"
+  >
     <template v-slot:prepend>
-      <v-icon color="white" icon="mdi-home"></v-icon>
+      <v-icon
+        color="white"
+        icon="mdi-home"
+      ></v-icon>
     </template>
     <template v-slot:divider>
-      <v-icon color="white" icon="mdi-chevron-right"></v-icon>
+      <v-icon
+        color="white"
+        icon="mdi-chevron-right"
+      ></v-icon>
     </template>
   </v-breadcrumbs>
 
   <h1>Admin Dashboard</h1>
 
   <v-row class="mb-6">
-    <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="/administration/users">
+    <v-col
+      cols="12"
+      md="4"
+      v-if="user"
+    >
+      <v-card
+        elevation="3"
+        color="#F2760C66"
+        to="/administration/users"
+      >
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"
@@ -30,8 +45,16 @@
         </v-card-text>
       </v-card>
     </v-col>
-    <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="/administration/locations">
+    <v-col
+      cols="12"
+      md="4"
+      v-if="user"
+    >
+      <v-card
+        elevation="3"
+        color="#F2760C66"
+        to="/administration/locations"
+      >
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"
@@ -43,8 +66,16 @@
         </v-card-text>
       </v-card>
     </v-col>
-    <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="/administration/injest-data">
+    <v-col
+      cols="12"
+      md="4"
+      v-if="user"
+    >
+      <v-card
+        elevation="3"
+        color="#F2760C66"
+        to="/administration/injest-data"
+      >
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"
@@ -57,8 +88,16 @@
       </v-card>
     </v-col>
 
-    <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="/administration/committees">
+    <v-col
+      cols="12"
+      md="4"
+      v-if="user"
+    >
+      <v-card
+        elevation="3"
+        color="#F2760C66"
+        to="/administration/committees"
+      >
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"
@@ -71,8 +110,16 @@
       </v-card>
     </v-col>
 
-    <v-col cols="12" md="4" v-if="user">
-      <v-card elevation="3" color="#F2760C66" to="/administration/inspection-locations">
+    <v-col
+      cols="12"
+      md="4"
+      v-if="user"
+    >
+      <v-card
+        elevation="3"
+        color="#F2760C66"
+        to="/administration/inspection-locations"
+      >
         <v-card-text style="text-align: right">
           <v-icon
             class="float-left"
@@ -88,13 +135,13 @@
 </template>
 
 <script lang="ts">
-import { mapActions, mapState } from "pinia";
+import { mapActions, mapState } from "pinia"
 
-import { useUserAdminStore } from "@/modules/administration/modules/users/store";
-import { useLocationAdminStore } from "@/modules/administration/modules/locations/store";
-import { useCommitteeAdminStore } from "@/modules/administration/modules/committees/store";
-import { useInspectionLocationAdminStore } from "@/modules/administration/modules/inspection-locations/store";
-import { useUserStore } from "@/store/UserStore";
+import { useUserAdminStore } from "@/modules/administration/modules/users/store"
+import { useLocationAdminStore } from "@/modules/administration/modules/locations/store"
+import { useCommitteeAdminStore } from "@/modules/administration/modules/committees/store"
+import { useInspectionLocationAdminStore } from "@/modules/administration/modules/inspection-locations/store"
+import { useUserStore } from "@/store/UserStore"
 
 export default {
   name: "Dashboard",
@@ -109,10 +156,10 @@ export default {
     ...mapState(useUserStore, ["user"]),
   },
   async mounted() {
-    await this.getAllUsers();
-    await this.getAllLocations();
-    await this.getAllCommittees();
-    await this.getAllInspectionLocations();
+    await this.getAllUsers()
+    await this.getAllLocations()
+    await this.getAllCommittees()
+    await this.getAllInspectionLocations()
   },
   methods: {
     ...mapActions(useUserAdminStore, ["getAllUsers"]),
@@ -120,5 +167,5 @@ export default {
     ...mapActions(useCommitteeAdminStore, ["getAllCommittees"]),
     ...mapActions(useInspectionLocationAdminStore, ["getAllInspectionLocations"]),
   },
-};
+}
 </script>

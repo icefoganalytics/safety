@@ -1,9 +1,22 @@
 <template>
-  <v-dialog v-model="visible" persistent max-width="700">
+  <v-dialog
+    v-model="visible"
+    persistent
+    max-width="700"
+  >
     <v-card v-if="selectedUser">
-      <v-toolbar color="primary" variant="dark" title="Edit User">
+      <v-toolbar
+        color="primary"
+        variant="dark"
+        title="Edit User"
+      >
         <v-spacer></v-spacer>
-        <v-btn icon @click="close" color="white"><v-icon>mdi-close</v-icon></v-btn>
+        <v-btn
+          icon
+          @click="close"
+          color="white"
+          ><v-icon>mdi-close</v-icon></v-btn
+        >
       </v-toolbar>
       <v-card-text>
         <v-row>
@@ -14,14 +27,16 @@
               readonly
               variant="outlined"
               density="comfortable"
-              append-inner-icon="mdi-lock" />
+              append-inner-icon="mdi-lock"
+            />
             <v-text-field
               label="Email"
               v-model="selectedUser.email"
               readonly
               variant="outlined"
               density="comfortable"
-              append-inner-icon="mdi-lock" />
+              append-inner-icon="mdi-lock"
+            />
 
             <v-select
               label="Status"
@@ -31,7 +46,8 @@
                 { value: 0, title: 'Inactive' },
               ]"
               variant="outlined"
-              density="comfortable" />
+              density="comfortable"
+            />
           </v-col>
           <v-col>
             <div v-for="(role, idx) of selectedUser.roles">
@@ -42,14 +58,16 @@
                   :items="roles"
                   item-title="name"
                   item-value="id"
-                  hide-details />
+                  hide-details
+                />
 
                 <v-btn
                   class="ml-2"
                   icon="mdi-delete"
                   size="small"
                   color="warning"
-                  @click="removeRoleClick(idx)"></v-btn>
+                  @click="removeRoleClick(idx)"
+                ></v-btn>
               </div>
               <v-autocomplete
                 v-if="departmentRelevantList.includes(role.role_type_id)"
@@ -59,28 +77,49 @@
                 :items="departments"
                 item-title="name"
                 hide-details
-                item-value="code" />
+                item-value="code"
+              />
 
-              <v-divider v-if="idx < selectedUser.roles.length - 1" class="my-4" color="black" :opacity="0.4" />
+              <v-divider
+                v-if="idx < selectedUser.roles.length - 1"
+                class="my-4"
+                color="black"
+                :opacity="0.4"
+              />
             </div>
-            <v-btn @click="addRoleClick" color="info" class="float-right mt-4">Add role</v-btn>
+            <v-btn
+              @click="addRoleClick"
+              color="info"
+              class="float-right mt-4"
+              >Add role</v-btn
+            >
           </v-col>
         </v-row>
       </v-card-text>
       <v-card-actions class="mx-4 mb-2">
-        <v-btn color="primary" variant="flat" @click="saveUser()">Save</v-btn>
+        <v-btn
+          color="primary"
+          variant="flat"
+          @click="saveUser()"
+          >Save</v-btn
+        >
         <v-spacer></v-spacer>
-        <v-btn color="yg_sun" variant="outlined" @click="close">Close</v-btn>
+        <v-btn
+          color="yg_sun"
+          variant="outlined"
+          @click="close"
+          >Close</v-btn
+        >
       </v-card-actions>
     </v-card>
   </v-dialog>
 </template>
 
 <script lang="ts">
-import { mapActions, mapState } from "pinia";
-import { useUserAdminStore } from "../store";
-import { useDepartmentStore } from "@/store/DepartmentStore";
-import { useRoleStore } from "@/store/RoleStore";
+import { mapActions, mapState } from "pinia"
+import { useUserAdminStore } from "../store"
+import { useDepartmentStore } from "@/store/DepartmentStore"
+import { useRoleStore } from "@/store/RoleStore"
 
 export default {
   name: "UserEditor",
@@ -91,33 +130,33 @@ export default {
     ...mapState(useRoleStore, ["roles"]),
 
     visible() {
-      return this.selectedUser ? true : false;
+      return this.selectedUser ? true : false
     },
     departmentRelevantList() {
-      const departmental = ["Safety Practitioner", "Safety Authority"];
-      return this.roles.filter((role) => departmental.includes(role.name)).map((role) => role.id);
+      const departmental = ["Safety Practitioner", "Safety Authority"]
+      return this.roles.filter((role) => departmental.includes(role.name)).map((role) => role.id)
     },
   },
   methods: {
     ...mapActions(useUserAdminStore, ["unselectUser", "saveUser"]),
     close() {
-      this.unselectUser();
+      this.unselectUser()
     },
 
     addRoleClick() {
-      if (!this.selectedUser) return;
-      this.selectedUser.roles = this.selectedUser.roles || [];
+      if (!this.selectedUser) return
+      this.selectedUser.roles = this.selectedUser.roles || []
 
-      (this.selectedUser.roles || []).push({
+      ;(this.selectedUser.roles || []).push({
         role_type_id: 1,
         user_id: this.selectedUser.id,
         start_date: new Date(),
         department_code: undefined,
-      });
+      })
     },
     removeRoleClick(idx: number) {
-      if (this.selectedUser) (this.selectedUser.roles || []).splice(idx, 1);
+      if (this.selectedUser) (this.selectedUser.roles || []).splice(idx, 1)
     },
   },
-};
+}
 </script>
