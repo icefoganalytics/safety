@@ -1,0 +1,9 @@
+FROM node:20.10.0-bookworm-slim
+
+WORKDIR /usr/src/api
+
+COPY package*.json ./
+
+RUN npm clean-install
+
+CMD ["npm", "run", "start"]

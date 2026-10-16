@@ -1,0 +1,73 @@
+x-default-environment: &default-environment
+  TZ: "UTC"
+  NODE_ENV: development
+  DB_CLIENT: postgresql
+  DB_HOST: db
+  DB_USER: &default-db-user postgres
+  DB_PASS: &default-db-password DevPwd99!
+  DB_NAME: &default-db-name safety_development
+  DB_PORT: 5432
+  FRONTEND_URL: "http://localhost:8080"
+  AUTH0_DOMAIN: "https://dev-0tc6bn14.eu.auth0.com"
+  AUTH0_AUDIENCE: "testing"
+  APPLICATION_NAME: "YG Safety Incident Tracker"
+  MAIL_HOST: "mail"
+  MAIL_PORT: 1025
+  MAIL_FROM: "safety.development@yukon.ca"
+
+services:
+  api:
+    build:
+      context: ./api
+      dockerfile: development.Dockerfile
+    env_file:
+      - path: ./api/.env.development
+        required: false
+    environment:
+      <<: *default-environment
+    tty: true # allows attaching debugger, equivalent of docker exec -t
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./api:/usr/src/api
+      - ./.gitignore:/usr/src/.gitignore
+      - ./.prettierrc.yaml:/usr/src/.prettierrc.yaml
+    depends_on:
+      - db
+      - mail
+
+  web:
+    build:
+      context: ./web
+      dockerfile: development.Dockerfile
+    environment:
+      <<: *default-environment
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./web:/usr/src/web
+      - ./.gitignore:/usr/src/.gitignore
+      - ./.prettierrc.yaml:/usr/src/.prettierrc.yaml
+    depends_on:
+      - api
+
+  db:
+    image: postgres:14-alpine
+    environment:
+      POSTGRES_USER: *default-db-user
+      POSTGRES_PASSWORD: *default-db-password
+      POSTGRES_DB: *default-db-name
+      TZ: "America/Whitehorse"
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+
+  mail:
+    image: maildev/maildev
+    ports:
+      - "1080:1080" # Web UI
+      - "1025:1025" # SMTP
+
+volumes:
+  db_data:
